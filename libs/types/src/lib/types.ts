@@ -3,3 +3,10 @@ export interface DateTest {
   isoDate: string;
   milliseconds: number;
 }
+
+export interface TestInterface {
+  id?: string;
+  created?: string;
+  message: string;
+  likes?: number;
+}
