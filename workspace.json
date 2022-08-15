@@ -3,6 +3,7 @@
   "version": 2,
   "projects": {
     "api-data": "apps/api-data",
-    "api-user": "apps/api-user"
+    "api-user": "apps/api-user",
+    "types": "libs/types"
   }
 }
