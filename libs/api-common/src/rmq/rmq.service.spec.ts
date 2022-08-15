@@ -1,15 +1,15 @@
 import { Test } from '@nestjs/testing';
-import { ApiCommonService } from './api-common.service';
+import {RmqService} from "@coin-monitor/api-common";
 
-describe('ApiCommonService', () => {
-  let service: ApiCommonService;
+describe('RmqService', () => {
+  let service: RmqService;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      providers: [ApiCommonService],
+      providers: [RmqService],
     }).compile();
 
-    service = module.get(ApiCommonService);
+    service = module.get(RmqService);
   });
 
   it('should be defined', () => {
