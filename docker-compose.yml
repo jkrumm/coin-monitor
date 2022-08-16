@@ -1,5 +1,62 @@
+x-default: &default
+  restart: ${DOCKER_RESTART_POLICY:-unless-stopped}
+  stop_grace_period: 3s
+  networks:
+    - cm-network
+
+networks:
+  cm-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+
 services:
   rabbitmq:
-    image: rabbitmq
+    <<: *default
+    image: rabbitmq:3.10.7-management-alpine
+    container_name: cm-rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
     ports:
-      - '5672:5672'
+      - 5672:5672
+      - 15672:15672
+
+  cm-mysql:
+    <<: *default
+    image: mysql:8.0.30
+    container_name: cm-mysql
+    command: mysqld --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d
+      - ./resource/mysql/config/my.cnf:/etc/mysql/conf.d/my.cnf
+
+  cm-redis:
+    <<: *default
+    image: redis:alpine
+    container_name: cm-redis
+    ports:
+      - 6379:6379
+
+  cm-arena:
+    <<: *default
+    image: node:alpine
+    container_name: cm-arena
+    working_dir: /app
+    volumes:
+      - ./resource/redis/arena:/app
+    environment:
+      - REDIS_HOSTS=local:cm-redis:6379
+      - SERVICE_USER=redis
+    ports:
+      - 4735:4735
+    command: sh -c "npm ci --quiet && node main.js"
+    depends_on:
+      - cm-redis
