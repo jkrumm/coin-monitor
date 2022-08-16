@@ -1,6 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientOptions, ClientsModule, Transport } from '@nestjs/microservices';
 import { RmqService } from '@coin-monitor/api-common';
 
 interface RmqModuleOptions {
@@ -19,13 +19,14 @@ export class RmqModule {
         ClientsModule.registerAsync([
           {
             name,
-            useFactory: (configService: ConfigService) => ({
-              transport: Transport.RMQ,
-              options: {
-                urls: [configService.get<string>('RABBIT_MQ_URI')],
-                queue: configService.get<string>(`RABBIT_MQ_${name}_QUEUE`),
-              },
-            }),
+            useFactory: (configService: ConfigService) =>
+              ({
+                transport: Transport.RMQ,
+                options: {
+                  urls: [configService.get<string>('RABBIT_MQ_URI')],
+                  queue: configService.get<string>(`RABBIT_MQ_${name}_QUEUE`),
+                },
+              } as ClientOptions),
             inject: [ConfigService],
           },
         ]),

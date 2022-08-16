@@ -19,10 +19,7 @@ export class AppController {
   }
 
   @EventPattern('get_data')
-  async handleGetData(
-    @Payload() data: { msg: string },
-    @Ctx() context: RmqContext,
-  ) {
+  async handleGetData(@Payload() data: { msg: string }, @Ctx() context: RmqContext) {
     this.logger.log('WORKS');
     this.logger.log(data.msg);
     this.rmqService.ack(context);
