@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import {RmqService} from "@coin-monitor/api-common";
+import { RmqService } from '@coin-monitor/api-common';
 
 describe('RmqService', () => {
   let service: RmqService;

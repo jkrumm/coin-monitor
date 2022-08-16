@@ -1,7 +1,7 @@
-import {DynamicModule, Module} from '@nestjs/common';
-import {ConfigService} from '@nestjs/config';
-import {ClientsModule, Transport} from '@nestjs/microservices';
-import {RmqService} from "@coin-monitor/api-common";
+import { DynamicModule, Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { RmqService } from '@coin-monitor/api-common';
 
 interface RmqModuleOptions {
   name: string;
@@ -12,7 +12,7 @@ interface RmqModuleOptions {
   exports: [RmqService],
 })
 export class RmqModule {
-  static register({name}: RmqModuleOptions): DynamicModule {
+  static register({ name }: RmqModuleOptions): DynamicModule {
     return {
       module: RmqModule,
       imports: [
