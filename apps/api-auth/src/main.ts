@@ -10,16 +10,10 @@ import { AppModule } from './app/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  // app.setGlobalPrefix(serverConfig.prefix);
-  const globalPrefix = 'user';
-
-  // app.setGlobalPrefix(globalPrefix);
-  // app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-
-  const port = process.env.PORT || 3333;
+  const globalPrefix = 'auth';
+  const port = process.env.PORT || 3334;
   await app.listen(port);
-  Logger.log(`🚀 api-user is running on: http://localhost:8000/${globalPrefix}`);
+  Logger.log(`🚀 api-auth is running on: http://localhost:8000/${globalPrefix}`);
 }
 
 bootstrap();

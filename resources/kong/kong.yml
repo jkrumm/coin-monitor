@@ -1,0 +1,27 @@
+_format_version: "2.1"
+
+services:
+  - name: user-service
+    url: http://host.docker.internal:3333
+    routes:
+      - name: user-route
+        paths:
+          - /user
+  - name: auth-service
+    url: http://host.docker.internal:3334
+    routes:
+      - name: auth-route
+        paths:
+          - /auth
+
+plugins:
+  - name: rate-limiting
+    service: auth-service
+    config:
+      hour: 5
+      policy: local
+  - name: rate-limiting
+    service: user-service
+    config:
+      minute: 30
+      policy: local
