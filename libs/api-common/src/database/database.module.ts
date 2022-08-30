@@ -14,8 +14,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         username: configService.get('MYSQL_USER'),
         password: configService.get('MYSQL_PASSWORD'),
         database: configService.get('MYSQL_DB'),
-        entities: [__dirname + '/../**/*.entity.ts'],
+        entities: [__dirname + '/../**/*.entity.{ts,js}'],
         // TODO: implement migrations
+        autoLoadEntities: true,
         synchronize: true,
       }),
     }),
