@@ -2,7 +2,6 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
-    "api-auth": "apps/api-auth",
     "api-common": "libs/api-common",
     "api-data": "apps/api-data",
     "api-user": "apps/api-user",
