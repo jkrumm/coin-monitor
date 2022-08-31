@@ -2,7 +2,7 @@ import { Controller, Get, Logger } from '@nestjs/common';
 
 import { AppService } from './app.service';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
-import { RmqService } from '@coin-monitor/api-common';
+import { RmqService } from '@cm/api-common';
 
 @Controller()
 export class AppController {

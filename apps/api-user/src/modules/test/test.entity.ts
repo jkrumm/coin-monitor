@@ -5,7 +5,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Identifiable, TimeTracked } from '@coin-monitor/api-common';
+import { Identifiable, TimeTracked } from '@cm/api-common';
 
 @Entity({ name: 'test' })
 export class Test implements Identifiable, TimeTracked {
