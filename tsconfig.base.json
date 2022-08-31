@@ -15,8 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@coin-monitor/api-common": ["libs/api-common/src/index.ts"],
-      "@coin-monitor/types": ["libs/types/src/index.ts"]
+      "@cm/api-user/*": ["apps/api-user/src/*"],
+      "@cm/api-common": ["libs/api-common/src/index.ts"],
+      "@cm/types": ["libs/types/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

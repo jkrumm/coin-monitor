@@ -7,19 +7,19 @@ services:
       - name: user-route
         paths:
           - /user
-  - name: auth-service
-    url: http://host.docker.internal:3334
-    routes:
-      - name: auth-route
-        paths:
-          - /auth
+#  - name: auth-service
+#    url: http://host.docker.internal:3334
+#    routes:
+#      - name: auth-route
+#        paths:
+#          - /auth
 
 plugins:
-  - name: rate-limiting
-    service: auth-service
-    config:
-      hour: 5
-      policy: local
+#  - name: rate-limiting
+#    service: auth-service
+#    config:
+#      hour: 5
+#      policy: local
   - name: rate-limiting
     service: user-service
     config:

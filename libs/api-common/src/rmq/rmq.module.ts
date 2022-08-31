@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientOptions, ClientsModule, Transport } from '@nestjs/microservices';
-import { RmqService } from '@coin-monitor/api-common';
+import { RmqService } from '@cm/api-common';
 
 interface RmqModuleOptions {
   name: string;
