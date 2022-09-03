@@ -6,15 +6,18 @@ import { JwtStrategy } from '@cm/api-user/modules/auth/strategies/jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { Auth } from '@cm/api-user/modules/auth/entities/auth.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Auth]),
     JwtModule.registerAsync({
-      useFactory: async () => ({
-        secret: 'secure',
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),
         signOptions: {
-          expiresIn: `3600s`,
+          expiresIn: `${configService.get('JWT_EXPIRATION_TIME')}s`,
         },
       }),
     }),
