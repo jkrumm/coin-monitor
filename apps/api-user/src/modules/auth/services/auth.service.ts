@@ -8,13 +8,13 @@ import { RegisterDto } from '@cm/api-user/modules/auth/dtos/register.dto';
 import { AuthDto } from '@cm/api-user/modules/auth/dtos/auth.dto';
 import { EmailNotUniqueException } from '@cm/api-user/modules/auth/exceptions/email-not-unique.exception';
 import { WrongCredentialsException } from '@cm/api-user/modules/auth/exceptions/wrong-credentials.exception';
-import { TokenPayload } from '@cm/types';
 import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import { Auth } from '@cm/api-user/modules/auth/entities/auth.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as argon2 from 'argon2';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +22,7 @@ export class AuthService {
     @InjectRepository(Auth)
     private authRepo: Repository<Auth>,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async findByAuthId(authId: string) {
@@ -72,10 +73,8 @@ export class AuthService {
     // TODO: increase Cookie and JWT security
     // https://stormpath.com/blog/build-secure-user-interfaces-using-jwts
     // https://stormpath.com/blog/token-auth-spa
-    const jwtExpirationTime = 3600;
-
-    const payload: TokenPayload = { authId };
-    const token = this.jwtService.sign(payload);
+    const token = this.jwtService.sign({ authId });
+    const jwtExpirationTime = this.configService.get<string>('JWT_EXPIRATION_TIME');
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${jwtExpirationTime}`;
   }
 
@@ -85,25 +84,14 @@ export class AuthService {
 
   private async hashPassword(password: string): Promise<string> {
     try {
-      // TODO: find best settings for argon2
-      // https://www.password-hashing.net/argon2-specs.pdf
-      // https://github.com/ranisalt/node-argon2/wiki/Options
-      // https://www.ory.sh/choose-recommended-argon2-parameters-password-hashing/
-      // https://www.codementor.io/@supertokens/how-to-hash-salt-and-verify-passwords-in-nodejs-python-golang-and-java-1sqko521bp
-      // https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
-
-      const hashingConfig = {
-        // based on OWASP cheat sheet recommendation#s (as of March, 2022)
+      // based on OWASP cheat sheet recommendation's (as of March, 2022)
+      return await argon2.hash(password, {
+        type: argon2.argon2i,
         parallelism: 1,
         memoryCost: 64000, // 64 mb
         timeCost: 3, // number of iterations
-      };
-
-      const salt = crypto.randomBytes(16);
-
-      return await argon2.hash(password, {
-        ...hashingConfig,
-        salt,
+        salt: crypto.randomBytes(16),
+        secret: Buffer.from(this.configService.get<string>('PW_HASH_PEPPER'), 'utf8'),
       });
     } catch (e) {
       throw new HttpException('Hashing failed', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -115,7 +103,11 @@ export class AuthService {
     plaintextPassword: string,
   ): Promise<boolean> {
     try {
-      if (await argon2.verify(hashedPassword, plaintextPassword)) {
+      if (
+        await argon2.verify(hashedPassword, plaintextPassword, {
+          secret: Buffer.from(this.configService.get<string>('PW_HASH_PEPPER'), 'utf8'),
+        })
+      ) {
         return true;
       } else {
         throw new WrongCredentialsException();

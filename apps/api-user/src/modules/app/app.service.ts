@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { DATA_SERVICE } from 'apps/api-user/src/constants/services';
+import { rmqServices } from '@cm/api-common';
 
 @Injectable()
 export class AppService {
-  constructor(@Inject(DATA_SERVICE) private dataClient: ClientProxy) {}
+  constructor(@Inject(rmqServices.DATA) private dataClient: ClientProxy) {}
 
   async getData(): Promise<{ message: string }> {
     await lastValueFrom(
