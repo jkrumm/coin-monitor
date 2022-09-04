@@ -25,27 +25,27 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async findByAuthId(authId: string) {
-    return await this.authRepo.findOne({ where: { id: authId } });
+  async findByAuthId(authId: string): Promise<Auth> {
+    return this.authRepo.findOneOrFail({ where: { id: authId } });
   }
 
-  async create(registerDto: RegisterDto): Promise<AuthDto> {
-    if (await this.authRepo.findOne({ where: { email: registerDto.email } })) {
-      throw new EmailNotUniqueException(registerDto.email);
+  async create({ email, username, password }: RegisterDto): Promise<AuthDto> {
+    if (await this.authRepo.findOne({ where: { email } })) {
+      throw new EmailNotUniqueException();
     } else {
-      let auth = new Auth(registerDto.email, registerDto.username, registerDto.password);
+      let auth = new Auth(email, username, password);
       await this.authRepo.save(auth);
       // await this.profileService.create(user.authId);
       return auth.toAuthDto();
     }
   }
 
-  public async register(registerDto: RegisterDto): Promise<AuthDto> {
+  public async register({ email, username, password }: RegisterDto): Promise<AuthDto> {
     try {
       const newIdentity: RegisterDto = {
-        email: registerDto.email,
-        username: registerDto.username,
-        password: await this.hashPassword(registerDto.password),
+        email,
+        username,
+        password: await this.hashPassword(password),
       };
       return this.create(newIdentity);
     } catch (error) {
@@ -56,12 +56,9 @@ export class AuthService {
     }
   }
 
-  public async getAuthenticatedUser(
-    email: string,
-    plaintextPassword: string,
-  ): Promise<AuthDto> {
+  public async authenticate(email: string, plaintextPassword: string): Promise<AuthDto> {
     try {
-      const auth = await this.authRepo.findOne({ where: { email } });
+      const auth = await this.authRepo.findOneOrFail({ where: { email } });
       await this.verifyPassword(auth.password, plaintextPassword);
       return auth.toAuthDto();
     } catch (error) {
@@ -69,7 +66,7 @@ export class AuthService {
     }
   }
 
-  public getCookieWithJwtToken(authId: string) {
+  public getCookie(authId: string) {
     // TODO: increase Cookie and JWT security
     // https://stormpath.com/blog/build-secure-user-interfaces-using-jwts
     // https://stormpath.com/blog/token-auth-spa
@@ -78,7 +75,7 @@ export class AuthService {
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${jwtExpirationTime}`;
   }
 
-  public getCookieForLogOut() {
+  public logout() {
     return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
   }
 

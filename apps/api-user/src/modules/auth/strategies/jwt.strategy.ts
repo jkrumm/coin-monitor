@@ -4,21 +4,26 @@ import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { TokenPayload } from '@cm/types';
 import { AuthService } from '@cm/api-user/modules/auth/services/auth.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly authService: AuthService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly authService: AuthService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
           return request?.cookies?.Authentication;
         },
       ]),
-      secretOrKey: 'test',
+      secretOrKey: configService.get('JWT_SECRET'),
     });
   }
 
   async validate(payload: TokenPayload) {
-    return this.authService.findByAuthId(payload.authId);
+    const auth = await this.authService.findByAuthId(payload.authId);
+    return auth.toAuthDto();
   }
 }
