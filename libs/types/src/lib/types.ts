@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 export interface RegisterInterface {
   email: string;
   username: string;
@@ -15,8 +17,8 @@ export interface LoginInterface {
   password: string;
 }
 
-export interface RequestWithAuth extends Request {
-  auth: AuthInterface;
+export interface RequestWithUser extends Request {
+  user: AuthInterface;
 }
 
 export interface TokenPayload {
