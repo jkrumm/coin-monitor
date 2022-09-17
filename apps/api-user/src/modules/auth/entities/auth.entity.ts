@@ -42,7 +42,7 @@ export class Auth implements Identifiable, TimeTracked {
     this.password = password;
   }
 
-  toAuthDto(): AuthDto {
+  toDto(): AuthDto {
     return {
       authId: this.id,
       username: this.username,

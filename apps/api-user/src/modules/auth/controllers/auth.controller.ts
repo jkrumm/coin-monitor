@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  InternalServerErrorException,
   Post,
   Req,
   Res,
@@ -11,11 +12,13 @@ import {
 import { Response } from 'express';
 import { AuthService } from '@cm/api-user/modules/auth/services/auth.service';
 import { RegisterDto } from '@cm/api-user/modules/auth/dtos/register.dto';
-import { LogInDto } from '@cm/api-user/modules/auth/dtos/login.dto';
+import { LoginDto } from '@cm/api-user/modules/auth/dtos/login.dto';
 import { AuthDto } from '@cm/api-user/modules/auth/dtos/auth.dto';
 import JwtAuthenticationGuard from '@cm/api-user/modules/auth/guards/jwt-authentication.guard';
 import { RequestWithUser } from '@cm/types';
 import { LocalAuthenticationGuard } from '@cm/api-user/modules/auth/guards/localAuthentication.guard';
+import { EmailNotUniqueException } from '@cm/api-user/modules/auth/exceptions/email-not-unique.exception';
+import { WrongCredentialsException } from '@cm/api-user/modules/auth/exceptions/wrong-credentials.exception';
 
 @Controller('auth')
 export class AuthController {
@@ -32,30 +35,44 @@ export class AuthController {
     @Body() registerDto: RegisterDto,
     @Res() response: Response,
   ): Promise<Response<AuthDto>> {
-    const auth = await this.authService.register(registerDto);
-    const cookie = this.authService.getCookie(auth.authId);
-    response.setHeader('Set-Cookie', cookie);
-    return response.send(auth);
+    try {
+      const auth = await this.authService.register(registerDto);
+      const cookie = this.authService.getCookie(auth.authId);
+      response.setHeader('Set-Cookie', cookie);
+      return response.send(auth);
+    } catch (error) {
+      if (error instanceof EmailNotUniqueException) {
+        throw error;
+      }
+      throw new InternalServerErrorException();
+    }
   }
 
   @UseGuards(LocalAuthenticationGuard)
   @Post('login')
   @HttpCode(200)
   async logIn(
-    @Body() { email, password }: LogInDto,
+    @Body() loginDto: LoginDto,
     @Res() response: Response,
   ): Promise<Response<AuthDto>> {
-    // TODO: implement protection against brute force attacks (api gateway)
-    const auth = await this.authService.authenticate(email, password);
-    const cookie = this.authService.getCookie(auth.authId);
-    response.setHeader('Set-Cookie', cookie);
-    return response.send(auth);
+    try {
+      // TODO: implement protection against brute force attacks (api gateway)
+      const auth = await this.authService.authenticate(loginDto);
+      const cookie = this.authService.getCookie(auth.authId);
+      response.setHeader('Set-Cookie', cookie);
+      return response.send(auth);
+    } catch (error) {
+      if (error instanceof WrongCredentialsException) {
+        throw error;
+      }
+      throw new InternalServerErrorException();
+    }
   }
 
   @UseGuards(JwtAuthenticationGuard)
   @Get('logout')
   async logout(@Res() response: Response): Promise<Response> {
-    response.setHeader('Set-Cookie', this.authService.logout());
+    response.setHeader('Set-Cookie', 'Authentication=; HttpOnly; Path=/; Max-Age=0');
     return response.send();
   }
 }

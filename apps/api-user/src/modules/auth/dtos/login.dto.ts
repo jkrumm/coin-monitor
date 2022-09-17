@@ -1,7 +1,7 @@
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
 import { LoginInterface } from '@cm/types';
 
-export class LogInDto implements LoginInterface {
+export class LoginDto implements LoginInterface {
   @IsEmail()
   @MaxLength(50)
   email: string;
