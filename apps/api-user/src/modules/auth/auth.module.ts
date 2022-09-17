@@ -5,12 +5,12 @@ import { LocalStrategy } from '@cm/api-user/modules/auth/strategies/local.strate
 import { JwtStrategy } from '@cm/api-user/modules/auth/strategies/jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { Auth } from '@cm/api-user/modules/auth/entities/auth.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Auth]),
+    MikroOrmModule.forFeature([Auth]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

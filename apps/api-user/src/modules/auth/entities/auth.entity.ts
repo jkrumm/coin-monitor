@@ -1,40 +1,30 @@
 import { Identifiable, TimeTracked } from '@cm/api-common';
-import { Exclude } from 'class-transformer';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
 import { AuthDto } from '@cm/api-user/modules/auth/dtos/auth.dto';
+import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/core';
+import { v4 } from 'uuid';
 
-@Entity({ name: 'auth' })
+@Entity({ tableName: 'auth' })
 export class Auth implements Identifiable, TimeTracked {
   //Identifiable
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryKey()
+  id: string = v4();
 
-  @Column({ length: 50, unique: true })
-  public email: string;
+  @Property()
+  @Index()
+  email!: string;
 
-  @Column({
-    length: 20,
-    nullable: true,
-  })
-  public username: string | null;
+  @Property()
+  username: string | null = null;
 
-  @Column({
-    length: 100,
-  })
-  @Exclude()
-  public password: string;
+  @Property({ hidden: true })
+  password!: string;
 
   //TimeTracked
-  @CreateDateColumn()
-  createdAt: Date;
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Property({ hidden: true, trackChanges: false })
+  createdAt: Date = new Date();
+
+  @Property({ onUpdate: () => new Date(), hidden: true, trackChanges: false })
+  updatedAt: Date = new Date();
 
   constructor(email: string, username: string | null, password: string) {
     this.email = email;

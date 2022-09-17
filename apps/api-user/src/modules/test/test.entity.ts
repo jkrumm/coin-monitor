@@ -1,28 +1,24 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
 import { Identifiable, TimeTracked } from '@cm/api-common';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { v4 } from 'uuid';
 
-@Entity({ name: 'test' })
+@Entity({ tableName: 'test' })
 export class Test implements Identifiable, TimeTracked {
   constructor(text: string) {
     this.text = text;
   }
 
   //Identifiable
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryKey()
+  id: string = v4();
+
+  @Property()
+  text!: string;
 
   //TimeTracked
-  @CreateDateColumn()
-  createdAt: Date;
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Property({ hidden: true })
+  createdAt: Date = new Date();
 
-  @Column()
-  text: string;
+  @Property({ onUpdate: () => new Date(), hidden: true })
+  updatedAt: Date = new Date();
 }

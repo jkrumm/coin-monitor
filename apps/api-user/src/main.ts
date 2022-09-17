@@ -20,6 +20,10 @@ async function bootstrap() {
   // app.setGlobalPrefix(globalPrefix);
   // app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
+  // Starts listening for shutdown hooks
+  // Required for MikroOrm
+  app.enableShutdownHooks();
+
   const port = process.env.PORT || 3333;
   await app.listen(port);
   Logger.log(`🚀 api-user is running on: http://localhost:8000/${globalPrefix}`);

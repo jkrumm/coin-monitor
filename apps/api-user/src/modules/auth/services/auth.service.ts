@@ -6,36 +6,43 @@ import {
 } from '@nestjs/common';
 import { RegisterDto } from '@cm/api-user/modules/auth/dtos/register.dto';
 import { AuthDto } from '@cm/api-user/modules/auth/dtos/auth.dto';
-import { EmailNotUniqueException } from '@cm/api-user/modules/auth/exceptions/email-not-unique.exception';
-import { WrongCredentialsException } from '@cm/api-user/modules/auth/exceptions/wrong-credentials.exception';
+import {
+  EmailNotUniqueException,
+} from '@cm/api-user/modules/auth/exceptions/email-not-unique.exception';
+import {
+  WrongCredentialsException,
+} from '@cm/api-user/modules/auth/exceptions/wrong-credentials.exception';
 import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import { Auth } from '@cm/api-user/modules/auth/entities/auth.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+
 import * as argon2 from 'argon2';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository } from '@mikro-orm/mysql';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(Auth)
-    private authRepo: Repository<Auth>,
+    private readonly authRepo: EntityRepository<Auth>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
   async findByAuthId(authId: string): Promise<Auth> {
-    return this.authRepo.findOneOrFail({ where: { id: authId } });
+    return this.authRepo.findOneOrFail({ id: authId });
   }
 
   async create({ email, username, password }: RegisterDto): Promise<AuthDto> {
-    if (await this.authRepo.findOne({ where: { email } })) {
+    if (await this.authRepo.findOne( email )) {
       throw new EmailNotUniqueException();
     } else {
-      let auth = new Auth(email, username, password);
-      await this.authRepo.save(auth);
+      const auth = this.authRepo.create({email, username, password});
+      // const auth = new Auth(email, username, password);
+
       // await this.profileService.create(user.authId);
+      await this.authRepo.persistAndFlush(auth);
       return auth.toAuthDto();
     }
   }
@@ -58,7 +65,7 @@ export class AuthService {
 
   public async authenticate(email: string, plaintextPassword: string): Promise<AuthDto> {
     try {
-      const auth = await this.authRepo.findOneOrFail({ where: { email } });
+      const auth = await this.authRepo.findOneOrFail(email);
       await this.verifyPassword(auth.password, plaintextPassword);
       return auth.toAuthDto();
     } catch (error) {
