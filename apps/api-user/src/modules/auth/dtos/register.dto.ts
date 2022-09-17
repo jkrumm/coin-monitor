@@ -5,6 +5,7 @@ import {
   Matches,
   MaxLength,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 import { RegisterInterface } from '@cm/types';
 
@@ -16,7 +17,8 @@ export class RegisterDto implements RegisterInterface {
   @IsString()
   @IsNotEmpty()
   @MaxLength(20)
-  username: string;
+  @ValidateIf(/* istanbul ignore next */ (_object, value) => value !== null)
+  username: string | null;
 
   // Password validation:
   // https://stackoverflow.com/questions/19605150/regex-for-password-must-contain-at-least-eight-characters-at-least-one-number-a

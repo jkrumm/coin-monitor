@@ -2,13 +2,13 @@ import { Request } from 'express';
 
 export interface RegisterInterface {
   email: string;
-  username: string;
+  username: string | null;
   password: string;
 }
 
 export interface AuthInterface {
   authId: string;
-  username: string;
+  username: string | null;
   email: string;
 }
 

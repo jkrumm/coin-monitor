@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RegisterDto } from '@cm/api-user/modules/auth/dtos/register.dto';
 import { AuthDto } from '@cm/api-user/modules/auth/dtos/auth.dto';
 import { EmailNotUniqueException } from '@cm/api-user/modules/auth/exceptions/email-not-unique.exception';
@@ -15,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as argon2 from 'argon2';
 import { ConfigService } from '@nestjs/config';
+import { LoginDto } from '@cm/api-user/modules/auth/dtos/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -36,31 +32,26 @@ export class AuthService {
       let auth = new Auth(email, username, password);
       await this.authRepo.save(auth);
       // await this.profileService.create(user.authId);
-      return auth.toAuthDto();
+      return auth.toDto();
     }
   }
 
   public async register({ email, username, password }: RegisterDto): Promise<AuthDto> {
-    try {
-      const newIdentity: RegisterDto = {
-        email,
-        username,
-        password: await this.hashPassword(password),
-      };
-      return this.create(newIdentity);
-    } catch (error) {
-      if (error instanceof EmailNotUniqueException) {
-        throw error;
-      }
-      throw new InternalServerErrorException();
+    if (await this.authRepo.findOne({ where: { email } })) {
+      throw new EmailNotUniqueException();
     }
+    const hashedPassword = await this.hashPassword(password);
+    let auth = new Auth(email, username, hashedPassword);
+    auth = await this.authRepo.save(auth);
+    // await this.profileService.create(user.authId);
+    return auth.toDto();
   }
 
-  public async authenticate(email: string, plaintextPassword: string): Promise<AuthDto> {
+  public async authenticate({ email, password }: LoginDto): Promise<AuthDto> {
     try {
       const auth = await this.authRepo.findOneOrFail({ where: { email } });
-      await this.verifyPassword(auth.password, plaintextPassword);
-      return auth.toAuthDto();
+      await this.verifyPassword(auth.password, password);
+      return auth.toDto();
     } catch (error) {
       throw new WrongCredentialsException();
     }
@@ -73,10 +64,6 @@ export class AuthService {
     const token = this.jwtService.sign({ authId });
     const jwtExpirationTime = this.configService.get<string>('JWT_EXPIRATION_TIME');
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${jwtExpirationTime}`;
-  }
-
-  public logout() {
-    return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
   }
 
   private async hashPassword(password: string): Promise<string> {
