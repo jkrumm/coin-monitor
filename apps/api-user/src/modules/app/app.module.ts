@@ -6,8 +6,8 @@ import {
   databaseConfig,
   DatabaseModule,
   rmqConfig,
+  rmqExchanges,
   RmqModule,
-  rmqTopics,
 } from '@cm/api-common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from '@cm/api-user/modules/auth/auth.module';
@@ -24,7 +24,7 @@ import { authConfig } from '@cm/api-user/config/auth.config';
       isGlobal: true,
     }),
     RmqModule.register({
-      topics: [rmqTopics.AUTH],
+      exchanges: [rmqExchanges.AUTH],
     }),
     DatabaseModule,
     TestModule,

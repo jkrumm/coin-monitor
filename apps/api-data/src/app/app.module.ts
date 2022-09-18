@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { rmqConfig, RmqModule, rmqTopics } from '@cm/api-common';
+import { rmqConfig, rmqExchanges, RmqModule } from '@cm/api-common';
 
 @Module({
   imports: [
@@ -12,7 +12,7 @@ import { rmqConfig, RmqModule, rmqTopics } from '@cm/api-common';
       isGlobal: true,
     }),
     RmqModule.register({
-      topics: [rmqTopics.AUTH],
+      exchanges: [rmqExchanges.AUTH],
     }),
   ],
   controllers: [AppController],
