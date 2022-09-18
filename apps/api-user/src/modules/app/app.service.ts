@@ -1,13 +1,4 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import {
-  AnalyticsSources,
-  AnalyticsTypes,
-  cmd,
-  CmdAnalytics,
-  CmdUserCreate,
-  rmqEmit,
-  rmqSend,
-} from 'libs/api-common/src/rmq/rmg.transmitter';
 import { rmqQueues } from '@cm/api-common';
 import { ClientProxy } from '@nestjs/microservices';
 
@@ -21,7 +12,7 @@ export class AppService {
   ) {}
 
   async getData(): Promise<{ message: string }> {
-    const payload1: CmdAnalytics = new CmdAnalytics(
+    /*const payload1: CmdAnalytics = new CmdAnalytics(
       AnalyticsSources.AUTH,
       AnalyticsTypes.AUTH_LOGIN,
     );
@@ -33,7 +24,7 @@ export class AppService {
     // this.client.emit('event.test', { msg: 'Hello EventDriven World!' });
 
     this.logger.log('reply1 ' + reply1.toString());
-    this.logger.log('reply2 ' + reply2);
+    this.logger.log('reply2 ' + reply2);*/
 
     return { message: 'Welcome to api-user!' };
   }

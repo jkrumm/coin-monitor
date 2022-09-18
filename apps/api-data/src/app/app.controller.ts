@@ -5,7 +5,7 @@ import { RmqService } from '@cm/api-common';
 import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
 import { cmd, CmdAnalytics } from 'libs/api-common/src/rmq/rmg.transmitter';
 
-@Controller()
+@Controller('data-service')
 export class AppController {
   private readonly logger = new Logger(AppController.name);
 
