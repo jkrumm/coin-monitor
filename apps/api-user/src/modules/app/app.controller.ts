@@ -1,7 +1,14 @@
 import { Controller, Get, Logger } from '@nestjs/common';
 
 import { AppService } from 'apps/api-user/src/modules/app/app.service';
-import { EventMsgEvent, RmqService, RpcDo } from '@cm/api-common';
+import {
+  DoRpcMetadata,
+  DoRpcPayload,
+  MsgEventMetadata,
+  MsgEventPayload,
+  RmqMessage,
+  RmqService,
+} from '@cm/api-common';
 
 @Controller('user-service')
 export class AppController {
@@ -15,11 +22,13 @@ export class AppController {
   @Get()
   async getData() {
     const response = await this.rmqService.sendRequest<{ result: string }>(
-      new RpcDo('WORKS'),
+      new RmqMessage(DoRpcMetadata, new DoRpcPayload('WORKS')),
     );
     this.logger.log('rpc ' + response.result);
 
-    await this.rmqService.sendEvent(new EventMsgEvent('Hello World!'));
+    await this.rmqService.sendEvent(
+      new RmqMessage(MsgEventMetadata, new MsgEventPayload('Hello World!')),
+    );
     return this.appService.getData();
   }
 }

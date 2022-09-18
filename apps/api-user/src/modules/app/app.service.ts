@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RabbitRPC, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
-import { rmqEvents, rmqQueues, rmqTopics } from '@cm/api-common';
+import { DoRpcMetadata, MsgEventMetadata, rmqQueues } from '@cm/api-common';
 
 @Injectable()
 export class AppService {
   private readonly logger = new Logger(AppService.name);
 
   @RabbitRPC({
-    exchange: rmqTopics.AUTH,
-    routingKey: rmqEvents.AUTH_RPC_DO,
+    ...DoRpcMetadata,
     queue: rmqQueues.RPC,
   })
   public async rpcHandler({ msg }) {
@@ -18,8 +17,7 @@ export class AppService {
   }
 
   @RabbitSubscribe({
-    exchange: rmqTopics.AUTH,
-    routingKey: rmqEvents.AUTH_MSG,
+    ...MsgEventMetadata,
     queue: rmqQueues.USER,
   })
   public async pubSubHandler({ msg }) {

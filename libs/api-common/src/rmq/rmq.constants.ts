@@ -1,15 +1,18 @@
-import { IsString } from 'class-validator';
-import { Expose } from 'class-transformer';
-import { EventAuthRegistered } from './events/auth.events';
+import {
+  IsDefined,
+  IsEnum,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+  validateOrReject,
+  ValidationError,
+} from 'class-validator';
+import { plainToInstance } from 'class-transformer';
+import { RequestOptions } from '@golevelup/nestjs-rabbitmq/lib/rabbitmq.interfaces';
 
-export enum rmqTopics {
+export enum rmqExchanges {
   AUTH = 'auth',
-}
-
-export enum rmqEvents {
-  AUTH_REGISTERED = 'auth.event.registered',
-  AUTH_RPC_DO = 'auth.rpc.do',
-  AUTH_MSG = 'auth.msg',
 }
 
 export enum rmqQueues {
@@ -18,15 +21,66 @@ export enum rmqQueues {
   DATA = 'data',
 }
 
-export interface RmqEvent {
-  exchange: string;
+export class RmqEventMetadata {
+  @IsEnum(rmqExchanges)
+  exchange: rmqExchanges;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(25)
+  @Matches(/^[a-z]+\.+(event|rpc)+\.+[a-z_]+$/, {
+    message: 'routingKey does not match the required pattern ex. auth.event.login',
+  })
   routingKey: string;
-  message: any;
+
+  @IsDefined()
+  payloadType: any;
+
+  constructor(exchange: rmqExchanges, routingKey: string) {
+    this.exchange = exchange;
+    this.routingKey = routingKey;
+  }
 }
 
-export class EventMsgEvent {
+export class RmqMessage {
+  meta: RmqEventMetadata;
+  payload: object;
+
+  constructor(meta: RmqEventMetadata, payload: RmqEventMetadata['payloadType']) {
+    this.meta = meta;
+    this.payload = payload;
+  }
+
+  async validate(): Promise<void | ValidationError> {
+    await validateOrReject(plainToInstance(RmqEventMetadata, this.meta));
+    await validateOrReject(plainToInstance(this.meta.payloadType, this.payload), {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+  }
+
+  async toEvent(): Promise<any> {
+    await this.validate();
+    return {
+      exchange: this.meta.exchange,
+      routingKey: this.meta.routingKey,
+      message: this.payload,
+    };
+  }
+
+  async toRequest(timeout: number = 10000): Promise<RequestOptions> {
+    await this.validate();
+    return {
+      exchange: this.meta.exchange,
+      routingKey: this.meta.routingKey,
+      payload: this.payload,
+      timeout,
+    };
+  }
+}
+
+export class MsgEventPayload {
   @IsString()
-  @Expose()
   msg: string;
 
   constructor(msg: string) {
@@ -34,9 +88,14 @@ export class EventMsgEvent {
   }
 }
 
-export class RpcDo {
+export const MsgEventMetadata: RmqEventMetadata = {
+  exchange: rmqExchanges.AUTH,
+  routingKey: 'auth.event.msg_send',
+  payloadType: MsgEventPayload,
+};
+
+export class DoRpcPayload {
   @IsString()
-  @Expose()
   msg: string;
 
   constructor(msg: string) {
@@ -44,8 +103,8 @@ export class RpcDo {
   }
 }
 
-export const eventMap = new Map<string, any>([
-  [EventMsgEvent.name, [EventMsgEvent, rmqEvents.AUTH_MSG]],
-  [EventAuthRegistered.name, [EventAuthRegistered, rmqEvents.AUTH_REGISTERED]],
-  [RpcDo.name, [RpcDo, rmqEvents.AUTH_RPC_DO]],
-]);
+export const DoRpcMetadata: RmqEventMetadata = {
+  exchange: rmqExchanges.AUTH,
+  routingKey: 'auth.rpc.do',
+  payloadType: DoRpcPayload,
+};

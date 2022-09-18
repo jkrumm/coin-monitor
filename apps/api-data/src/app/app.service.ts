@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
-import { rmqEvents, rmqQueues, rmqTopics } from '@cm/api-common';
+import { MsgEventMetadata, rmqQueues } from '@cm/api-common';
 
 @Injectable()
 export class AppService {
@@ -11,8 +11,7 @@ export class AppService {
   }
 
   @RabbitSubscribe({
-    exchange: rmqTopics.AUTH,
-    routingKey: rmqEvents.AUTH_MSG,
+    ...MsgEventMetadata,
     queue: rmqQueues.DATA,
   })
   public async pubSubHandler(data) {

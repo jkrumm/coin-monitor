@@ -1,4 +1,5 @@
 export * from './rmq/events/auth.events';
+export * from './rmq/rmq.guard';
 export * from './rmq/rmq.constants';
 export * from './rmq/rmq.service';
 export * from './rmq/rmq.config';
