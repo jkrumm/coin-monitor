@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { Auth } from '@cm/api-user/modules/auth/entities/auth.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { rmqExchanges, RmqModule } from '@cm/api-common';
 
 @Module({
   imports: [
@@ -20,6 +21,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           expiresIn: `${configService.get('JWT_EXPIRATION_TIME')}s`,
         },
       }),
+    }),
+    RmqModule.register({
+      exchanges: [rmqExchanges.AUTH],
     }),
   ],
   controllers: [AuthController],

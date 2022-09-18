@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -15,7 +16,8 @@ export class Auth implements Identifiable, TimeTracked {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 50, unique: true })
+  @Index({ unique: true })
+  @Column({ length: 50 })
   public email: string;
 
   @Column({

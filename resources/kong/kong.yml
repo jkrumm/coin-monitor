@@ -19,6 +19,12 @@ services:
       - name: auth-user-service-route
         paths:
           - /auth
+  - name: user-user-service
+    url: http://host.docker.internal:3333/user
+    routes:
+      - name: user-user-service-route
+        paths:
+          - /user
   - name: data-service
     url: http://host.docker.internal:3334/data-service
     routes:

@@ -11,6 +11,12 @@ import { Repository } from 'typeorm';
 import * as argon2 from 'argon2';
 import { ConfigService } from '@nestjs/config';
 import { LoginDto } from '@cm/api-user/modules/auth/dtos/login.dto';
+import {
+  AuthRegisteredEventMetadata,
+  AuthRegisteredEventPayload,
+  RmqMessage,
+  RmqService,
+} from '@cm/api-common';
 
 @Injectable()
 export class AuthService {
@@ -19,21 +25,11 @@ export class AuthService {
     private authRepo: Repository<Auth>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly rmqService: RmqService,
   ) {}
 
   async findByAuthId(authId: string): Promise<Auth> {
     return this.authRepo.findOneOrFail({ where: { id: authId } });
-  }
-
-  async create({ email, username, password }: RegisterDto): Promise<AuthDto> {
-    if (await this.authRepo.findOne({ where: { email } })) {
-      throw new EmailNotUniqueException();
-    } else {
-      let auth = new Auth(email, username, password);
-      await this.authRepo.save(auth);
-      // await this.profileService.create(user.authId);
-      return auth.toDto();
-    }
   }
 
   public async register({ email, username, password }: RegisterDto): Promise<AuthDto> {
@@ -43,7 +39,14 @@ export class AuthService {
     const hashedPassword = await this.hashPassword(password);
     let auth = new Auth(email, username, hashedPassword);
     auth = await this.authRepo.save(auth);
-    // await this.profileService.create(user.authId);
+
+    await this.rmqService.sendEvent(
+      new RmqMessage(
+        AuthRegisteredEventMetadata,
+        new AuthRegisteredEventPayload(auth.id),
+      ),
+    );
+
     return auth.toDto();
   }
 
