@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
-import { MsgEventMetadata, rmqQueues } from '@cm/api-common';
+import { Injectable, Logger, UsePipes, ValidationPipe } from '@nestjs/common';
+import { RabbitPayload, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
+import { MsgEventMetadata, MsgEventPayload, rmqQueues } from '@cm/api-common';
 
 @Injectable()
 export class AppService {
@@ -14,7 +14,8 @@ export class AppService {
     ...MsgEventMetadata,
     queue: rmqQueues.DATA,
   })
-  public async pubSubHandler(data) {
+  @UsePipes(ValidationPipe)
+  public async pubSubHandler(@RabbitPayload() data: MsgEventPayload) {
     this.logger.log(`Received message: ${JSON.stringify(data)}`);
   }
 }
