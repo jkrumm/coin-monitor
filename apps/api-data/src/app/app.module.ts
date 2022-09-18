@@ -2,16 +2,14 @@ import { Module } from '@nestjs/common';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { rmqConfig, RmqModule } from '@cm/api-common';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [rmqConfig],
+      load: [],
       isGlobal: true,
     }),
-    RmqModule.register(),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { AppController } from '@cm/api-user/modules/app/app.controller';
 import { AppService } from '@cm/api-user/modules/app/app.service';
-import { databaseConfig, DatabaseModule, rmqConfig, RmqModule } from '@cm/api-common';
+import { databaseConfig, DatabaseModule } from '@cm/api-common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from '@cm/api-user/modules/auth/auth.module';
 import { TestModule } from '@cm/api-user/modules/test/test.module';
@@ -14,10 +14,9 @@ import { authConfig } from '@cm/api-user/config/auth.config';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [databaseConfig, rmqConfig, authConfig],
+      load: [databaseConfig, authConfig],
       isGlobal: true,
     }),
-    RmqModule.register(),
     DatabaseModule,
     TestModule,
     AuthModule,

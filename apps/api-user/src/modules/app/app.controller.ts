@@ -1,17 +1,13 @@
 import { Controller, Get, Logger } from '@nestjs/common';
 
 import { AppService } from 'apps/api-user/src/modules/app/app.service';
-import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
-import { RmqService } from '@cm/api-common';
-import { cmd, CmdUserCreate } from 'libs/api-common/src/rmq/rmg.transmitter';
 
 @Controller('user-service')
 export class AppController {
   private readonly logger = new Logger(AppController.name);
 
   constructor(
-    private readonly appService: AppService,
-    private readonly rmqService: RmqService,
+    private readonly appService: AppService, // private readonly rmqService: RmqService,
   ) {}
 
   @Get()
@@ -19,7 +15,7 @@ export class AppController {
     return this.appService.getData();
   }
 
-  @EventPattern(cmd.user.create)
+  /*@EventPattern(cmd.user.create)
   async MessagePattern(
     @Payload() data: CmdUserCreate,
     @Ctx() context: RmqContext,
@@ -29,5 +25,5 @@ export class AppController {
     this.rmqService.ack(context);
     // throw new Error('expected');
     return { msg: 'test 2' };
-  }
+  }*/
 }
