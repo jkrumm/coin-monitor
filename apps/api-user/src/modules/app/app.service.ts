@@ -1,10 +1,31 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { RabbitRPC, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 
 @Injectable()
 export class AppService {
   private readonly logger = new Logger(AppService.name);
 
   constructor() {}
+
+  @RabbitRPC({
+    exchange: 'exchange1',
+    routingKey: 'rpc-route',
+    queue: 'rpc-queue',
+  })
+  public async rpcHandler({ msg }) {
+    return {
+      response: msg,
+    };
+  }
+
+  @RabbitSubscribe({
+    exchange: 'exchange1',
+    routingKey: 'subscribe-route',
+    queue: 'user',
+  })
+  public async pubSubHandler({ msg }) {
+    console.log(`Received message: ${msg}`);
+  }
 
   async getData(): Promise<{ message: string }> {
     /*const payload1: CmdAnalytics = new CmdAnalytics(

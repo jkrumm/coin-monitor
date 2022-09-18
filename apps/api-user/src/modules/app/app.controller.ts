@@ -1,6 +1,7 @@
 import { Controller, Get, Logger } from '@nestjs/common';
 
 import { AppService } from 'apps/api-user/src/modules/app/app.service';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
 @Controller('user-service')
 export class AppController {
@@ -8,10 +9,22 @@ export class AppController {
 
   constructor(
     private readonly appService: AppService, // private readonly rmqService: RmqService,
+    private readonly amqpConnection: AmqpConnection,
   ) {}
 
   @Get()
-  getData() {
+  async getData() {
+    const response = await this.amqpConnection.request<{ response: string }>({
+      exchange: 'exchange1',
+      routingKey: 'rpc-route',
+      payload: {
+        msg: 'Hello World!',
+      },
+      timeout: 10000, // optional timeout for how long the request
+      // should wait before failing if no response is received
+    });
+    this.logger.log('rpc', response.response);
+    this.amqpConnection.publish('exchange1', 'subscribe-route', { msg: 'Hello World!' });
     return this.appService.getData();
   }
 
