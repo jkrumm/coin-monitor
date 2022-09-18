@@ -1,15 +1,10 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { rmqQueues } from '@cm/api-common';
-import { ClientProxy } from '@nestjs/microservices';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
   private readonly logger = new Logger(AppService.name);
 
-  constructor(
-    @Inject(rmqQueues.DEFAULT)
-    private client: ClientProxy,
-  ) {}
+  constructor() {}
 
   async getData(): Promise<{ message: string }> {
     /*const payload1: CmdAnalytics = new CmdAnalytics(
