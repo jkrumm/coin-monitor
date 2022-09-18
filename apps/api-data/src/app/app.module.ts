@@ -11,7 +11,7 @@ import { ConfigModule } from '@nestjs/config';
       load: [rmqConfig],
       isGlobal: true,
     }),
-    RmqModule,
+    RmqModule.register(),
   ],
   controllers: [AppController],
   providers: [AppService],

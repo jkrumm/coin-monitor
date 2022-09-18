@@ -1,10 +1,10 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientOptions, ClientsModule, Transport } from '@nestjs/microservices';
-import { RmqService, rmqServices } from '@cm/api-common';
+import { rmqQueues, RmqService } from '@cm/api-common';
 
 interface RmqModuleOptions {
-  queue: rmqServices;
+  queue: rmqQueues;
 }
 
 @Module({
@@ -12,7 +12,9 @@ interface RmqModuleOptions {
   exports: [RmqService],
 })
 export class RmqModule {
-  static register({ queue }: RmqModuleOptions): DynamicModule {
+  static register(
+    { queue }: RmqModuleOptions = { queue: rmqQueues.DEFAULT },
+  ): DynamicModule {
     return {
       module: RmqModule,
       imports: [
