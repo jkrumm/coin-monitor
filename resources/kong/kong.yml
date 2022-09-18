@@ -2,26 +2,33 @@ _format_version: "2.1"
 
 services:
   - name: user-service
-    url: http://host.docker.internal:3333
+    url: http://host.docker.internal:3333/user-service
     routes:
-      - name: user-route
+      - name: user-service-route
         paths:
-          - /user
-#  - name: auth-service
-#    url: http://host.docker.internal:3334
-#    routes:
-#      - name: auth-route
-#        paths:
-#          - /auth
+          - /user-service
+  - name: test-user-service
+    url: http://host.docker.internal:3333/test
+    routes:
+      - name: test-user-service-route
+        paths:
+          - /test
+  - name: auth-user-service
+    url: http://host.docker.internal:3333/auth
+    routes:
+      - name: auth-user-service-route
+        paths:
+          - /auth
+  - name: data-service
+    url: http://host.docker.internal:3334/data-service
+    routes:
+      - name: data-service-route
+        paths:
+          - /data-service
 
 plugins:
-#  - name: rate-limiting
-#    service: auth-service
-#    config:
-#      hour: 5
-#      policy: local
   - name: rate-limiting
-    service: user-service
+    service: auth-user-service
     config:
-      minute: 30
+      minute: 5
       policy: local
