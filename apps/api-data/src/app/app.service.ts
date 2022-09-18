@@ -1,18 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
+import { rmqEvents, rmqQueues, rmqTopics } from '@cm/api-common';
 
 @Injectable()
 export class AppService {
+  private readonly logger = new Logger(AppService.name);
+
   getData(): { message: string } {
     return { message: 'Welcome to api-data!' };
   }
 
   @RabbitSubscribe({
-    exchange: 'exchange1',
-    routingKey: 'subscribe-route',
-    queue: 'data',
+    exchange: rmqTopics.AUTH,
+    routingKey: rmqEvents.AUTH_MSG,
+    queue: rmqQueues.DATA,
   })
-  public async pubSubHandler({ msg }) {
-    console.log(`Received message: ${msg}`);
+  public async pubSubHandler(data) {
+    this.logger.log(`Received message: ${JSON.stringify(data)}`);
   }
 }

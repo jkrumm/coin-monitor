@@ -1,14 +1,11 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { RabbitMQConfig, RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { ConfigService } from '@nestjs/config';
-
-interface RmqExchange {
-  name: string;
-  type: string;
-}
+import { rmqTopics } from './rmq.constants';
+import { RmqService } from './rmq.service';
 
 interface RmqModuleOptions {
-  exchanges: RmqExchange[];
+  topics: rmqTopics[];
 }
 
 @Module({
@@ -16,14 +13,14 @@ interface RmqModuleOptions {
   //controllers: [MessagingController],
 })
 export class RmqModule {
-  static register({ exchanges }: RmqModuleOptions): DynamicModule {
+  static register({ topics }: RmqModuleOptions): DynamicModule {
     return {
       module: RmqModule,
       imports: [
         RabbitMQModule.forRootAsync(RabbitMQModule, {
           useFactory: (configService: ConfigService) =>
             ({
-              exchanges,
+              exchanges: topics.map((topic) => ({ name: topic, type: 'topic' })),
               uri: configService.get<string>('RABBIT_MQ_URI'),
               connectionInitOptions: { wait: false },
               /* channels: {
@@ -39,7 +36,8 @@ export class RmqModule {
           inject: [ConfigService],
         }),
       ],
-      exports: [RabbitMQModule],
+      providers: [RmqService],
+      exports: [RabbitMQModule, RmqService],
     };
   }
 }
