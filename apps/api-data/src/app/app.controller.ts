@@ -1,8 +1,9 @@
 import { Controller, Get, Logger } from '@nestjs/common';
 
 import { AppService } from './app.service';
-import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { RmqService } from '@cm/api-common';
+import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
+import { cmd, CmdAnalytics } from 'libs/api-common/src/rmq/rmg.transmitter';
 
 @Controller()
 export class AppController {
@@ -18,10 +19,14 @@ export class AppController {
     return this.appService.getData();
   }
 
-  @EventPattern('get_data')
-  async handleGetData(@Payload() data: { msg: string }, @Ctx() context: RmqContext) {
+  @MessagePattern(cmd.analytics)
+  async handleGetData(
+    @Payload() data: CmdAnalytics,
+    @Ctx() context: RmqContext,
+  ): Promise<object> {
     this.logger.log('WORKS');
-    this.logger.log(data.msg);
-    this.rmqService.ack(context);
+    this.logger.log(data);
+    await this.rmqService.ack(context);
+    return { msg: 'test 1' };
   }
 }
