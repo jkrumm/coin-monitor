@@ -10,7 +10,7 @@ export class AuthRegisteredEventPayload {
   }
 }
 
-export const AuthEventMetadata: RmqEventMetadata = {
+export const AuthRegisteredEventMetadata: RmqEventMetadata = {
   exchange: rmqExchanges.AUTH,
   routingKey: 'auth.event.registered',
   payloadType: AuthRegisteredEventPayload,
