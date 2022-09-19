@@ -21,7 +21,7 @@ export enum rmqQueues {
   DATA = 'data',
 }
 
-export class RmqEventMetadata {
+export class RmqMessageMetadata {
   @IsEnum(rmqExchanges)
   exchange: rmqExchanges;
 
@@ -43,16 +43,16 @@ export class RmqEventMetadata {
 }
 
 export class RmqMessage {
-  meta: RmqEventMetadata;
+  meta: RmqMessageMetadata;
   payload: object;
 
-  constructor(meta: RmqEventMetadata, payload: RmqEventMetadata['payloadType']) {
+  constructor(meta: RmqMessageMetadata, payload: RmqMessageMetadata['payloadType']) {
     this.meta = meta;
     this.payload = payload;
   }
 
   async validate(): Promise<void | ValidationError> {
-    await validateOrReject(plainToInstance(RmqEventMetadata, this.meta));
+    await validateOrReject(plainToInstance(RmqMessageMetadata, this.meta));
     await validateOrReject(plainToInstance(this.meta.payloadType, this.payload), {
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -88,7 +88,7 @@ export class MsgEventPayload {
   }
 }
 
-export const MsgEventMetadata: RmqEventMetadata = {
+export const MsgEventMetadata: RmqMessageMetadata = {
   exchange: rmqExchanges.AUTH,
   routingKey: 'auth.event.msg_send',
   payloadType: MsgEventPayload,
@@ -103,7 +103,7 @@ export class DoRpcPayload {
   }
 }
 
-export const DoRpcMetadata: RmqEventMetadata = {
+export const DoRpcMetadata: RmqMessageMetadata = {
   exchange: rmqExchanges.AUTH,
   routingKey: 'auth.rpc.do',
   payloadType: DoRpcPayload,

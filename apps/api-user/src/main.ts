@@ -12,11 +12,10 @@ async function bootstrap() {
 
   // app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  // const port = process.env.PORT || 3333;
   app.useGlobalGuards(new RmqGuard());
 
   await app.listen(3333);
-  Logger.log(`🚀 api-user is running on: http://localhost:8000/`);
+  Logger.log(`🚀 api-user is running on: http://localhost:8000/ | 3333`);
 }
 
 bootstrap();

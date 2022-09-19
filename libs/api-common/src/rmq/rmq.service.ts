@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
-import { RmqMessage } from '@cm/api-common';
+import { RmqMessage, RmqMessageMetadata } from '@cm/api-common';
 
 @Injectable()
 export class RmqService {
@@ -8,9 +8,10 @@ export class RmqService {
 
   constructor(private readonly amqpConnection: AmqpConnection) {}
 
-  async sendEvent(event: RmqMessage) {
+  async sendEvent(metadata: RmqMessageMetadata, payload: object) {
+    const rmqMessage = new RmqMessage(metadata, payload);
     try {
-      const rmqEvent = await event.toEvent();
+      const rmqEvent = await rmqMessage.toEvent();
       this.amqpConnection.publish(
         rmqEvent.exchange,
         rmqEvent.routingKey,
@@ -19,24 +20,29 @@ export class RmqService {
     } catch (e) {
       this.logger.error('sendEvent failed', {
         error: JSON.stringify(e),
-        exchange: event.meta.exchange,
-        routingKey: event.meta.routingKey,
-        payload: event.payload,
+        exchange: rmqMessage.meta.exchange,
+        routingKey: rmqMessage.meta.routingKey,
+        payload: JSON.stringify(rmqMessage.payload),
       });
       throw e;
     }
   }
 
-  async sendRequest<T>(event: RmqMessage, timeout?: number): Promise<T> {
+  async sendRequest<T>(
+    metadata: RmqMessageMetadata,
+    payload: object,
+    timeout?: number,
+  ): Promise<T> {
+    const rmqMessage = new RmqMessage(metadata, payload);
     try {
-      const rmqRequest = await event.toRequest(timeout);
+      const rmqRequest = await rmqMessage.toRequest(timeout);
       return await this.amqpConnection.request<T>(rmqRequest);
     } catch (e) {
       this.logger.error('sendRequest failed', {
         error: JSON.stringify(e),
-        exchange: event.meta.exchange,
-        routingKey: event.meta.routingKey,
-        payload: event.payload,
+        exchange: rmqMessage.meta.exchange,
+        routingKey: rmqMessage.meta.routingKey,
+        payload: JSON.stringify(rmqMessage.payload),
       });
       throw e;
     }

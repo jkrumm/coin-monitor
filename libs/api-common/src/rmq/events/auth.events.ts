@@ -1,4 +1,4 @@
-import { RmqEventMetadata, rmqExchanges } from 'libs/api-common/src/rmq/rmq.constants';
+import { rmqExchanges, RmqMessageMetadata } from 'libs/api-common/src/rmq/rmq.constants';
 import { IsUUID } from 'class-validator';
 
 export class AuthRegisteredEventPayload {
@@ -10,7 +10,7 @@ export class AuthRegisteredEventPayload {
   }
 }
 
-export const AuthRegisteredEventMetadata: RmqEventMetadata = {
+export const AuthRegisteredEventMetadata: RmqMessageMetadata = {
   exchange: rmqExchanges.AUTH,
   routingKey: 'auth.event.registered',
   payloadType: AuthRegisteredEventPayload,
