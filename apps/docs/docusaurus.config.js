@@ -56,18 +56,23 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      colorMode: {
+        defaultMode: 'dark',
+        respectPrefersColorScheme: true,
+      },
       navbar: {
-        title: 'My Site',
+        title: 'CoinMonitor',
         logo: {
-          alt: 'My Site Logo',
-          src: 'img/logo.svg',
+          alt: 'CoinMonitor Logo',
+          src: 'img/logo-black.svg',
+          srcDark: 'img/logo-white.svg',
         },
         items: [
           {
             type: 'doc',
             docId: 'intro',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Documentation',
           },
           { to: '/blog', label: 'Blog', position: 'left' },
           {
@@ -84,7 +89,7 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'Tutorial',
+                label: 'Documentation',
                 to: '/docs/intro',
               },
             ],
@@ -92,7 +97,7 @@ const config = {
           {
             title: 'Community',
             items: [
-              {
+              /*{
                 label: 'Stack Overflow',
                 href: 'https://stackoverflow.com/questions/tagged/docusaurus',
               },
@@ -103,7 +108,7 @@ const config = {
               {
                 label: 'Twitter',
                 href: 'https://twitter.com/docusaurus',
-              },
+              },*/
             ],
           },
           {
@@ -115,12 +120,12 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                href: 'https://github.com/jkrumm/coin-monitor',
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} CoinMonitor. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,
