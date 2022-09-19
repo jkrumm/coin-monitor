@@ -12,7 +12,7 @@ async function main() {
         ...queue,
 
         // Queue type (Bull or Bee - default Bull).
-        type: 'bull',
+        type: 'queue',
 
         redis: {
           host: 'cm-redis',
@@ -22,7 +22,7 @@ async function main() {
     },
     {
       port: HTTP_SERVER_PORT,
-    }
+    },
   );
 }
 

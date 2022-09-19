@@ -1,3 +1,6 @@
+export * from './queue/queue.module';
+export * from './queue/queue.constants';
+export * from './redis/redis.config';
 export * from './rmq/events/auth.events';
 export * from './rmq/rmq.guard';
 export * from './rmq/rmq.constants';
@@ -7,4 +10,5 @@ export * from './rmq/rmq.module';
 export * from './database/database.module';
 export * from './database/database.config';
 export * from './database/entity.definitions';
-export * from 'libs/api-common/src/utils/get-env';
+export * from './utils/get-env';
+export * from './utils/booly';

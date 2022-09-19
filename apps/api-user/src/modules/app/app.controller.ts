@@ -6,7 +6,6 @@ import {
   DoRpcPayload,
   MsgEventMetadata,
   MsgEventPayload,
-  RmqMessage,
   RmqService,
 } from '@cm/api-common';
 
@@ -22,12 +21,14 @@ export class AppController {
   @Get()
   async getData() {
     const response = await this.rmqService.sendRequest<{ result: string }>(
-      new RmqMessage(DoRpcMetadata, new DoRpcPayload('WORKS')),
+      DoRpcMetadata,
+      new DoRpcPayload('WORKS'),
     );
     this.logger.log('rpc ' + response.result);
 
     await this.rmqService.sendEvent(
-      new RmqMessage(MsgEventMetadata, new MsgEventPayload('Hello World!')),
+      MsgEventMetadata,
+      new MsgEventPayload('Hello World!'),
     );
     return this.appService.getData();
   }

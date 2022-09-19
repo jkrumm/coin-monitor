@@ -14,7 +14,6 @@ import { LoginDto } from '@cm/api-user/modules/auth/dtos/login.dto';
 import {
   AuthRegisteredEventMetadata,
   AuthRegisteredEventPayload,
-  RmqMessage,
   RmqService,
 } from '@cm/api-common';
 
@@ -41,10 +40,8 @@ export class AuthService {
     auth = await this.authRepo.save(auth);
 
     await this.rmqService.sendEvent(
-      new RmqMessage(
-        AuthRegisteredEventMetadata,
-        new AuthRegisteredEventPayload(auth.id),
-      ),
+      AuthRegisteredEventMetadata,
+      new AuthRegisteredEventPayload(auth.id),
     );
 
     return auth.toDto();

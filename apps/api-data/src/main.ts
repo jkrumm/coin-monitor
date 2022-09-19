@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
-import { AppModule } from './app/app.module';
+import { AppModule } from './modules/app/app.module';
 import { RmqGuard } from '@cm/api-common';
 
 async function bootstrap() {
@@ -9,9 +9,8 @@ async function bootstrap() {
 
   app.useGlobalGuards(new RmqGuard());
 
-  // const port = process.env.PORT || 3334;
   await app.listen(3334);
-  Logger.log(`🚀 api-data is running on: http://localhost:8000/`);
+  Logger.log(`🚀 api-data is running on: http://localhost:8000/ | 3334`);
 }
 
 bootstrap();
