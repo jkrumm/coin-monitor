@@ -3,12 +3,12 @@ import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Job, JobOptions, Queue } from 'bull';
 import {
   AbstractQueueManager,
+  jobConfig,
   JobMetadata,
   QueueJob,
   queues,
-  taskConfig,
 } from '@cm/api-common';
-import { IsString } from 'class-validator';
+import { IsISO8601, IsString } from 'class-validator';
 
 export class FirstJobPayload {
   @IsString()
@@ -19,9 +19,19 @@ export class FirstJobPayload {
   }
 }
 
-export const firstJobMetadata: JobMetadata = {
-  name: 'first_job',
+export const startPipelineJobMetadata: JobMetadata = {
+  name: 'start_pipeline',
   payloadType: FirstJobPayload,
+};
+
+export class FetchCoinMetricsJobPayload {
+  @IsISO8601()
+  date: string;
+}
+
+export const fetchCoinMetricsJobMetadata: JobMetadata = {
+  name: 'fetch_coin_metrics',
+  payloadType: FetchCoinMetricsJobPayload,
 };
 
 @Injectable()
@@ -42,11 +52,11 @@ export class MetricsQueueService {
     try {
       await job.validate();
       return await this.queue.add(job.meta.name, job.payload, {
-        ...taskConfig,
+        ...jobConfig,
         ...(options ? options : {}),
       });
     } catch (e) {
-      this.logger.error('sendEvent failed', {
+      this.logger.error('add job to queue failed', {
         error: JSON.stringify(e),
         jobName: metadata.name,
         payload: JSON.stringify(payload),
