@@ -1,6 +1,6 @@
 import { Injectable, Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../entites/user.entity';
+import { User } from '@cm/api-user/modules/user/entites/user.entity';
 import { Repository } from 'typeorm';
 import { RabbitPayload, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import {
@@ -8,7 +8,7 @@ import {
   AuthRegisteredEventPayload,
   rmqQueues,
 } from '@cm/api-common';
-import { UserDto } from '../dtos/user.dto';
+import { UserDto } from '@cm/api-user/modules/user/dtos/user.dto';
 
 @Injectable()
 export class UserService {

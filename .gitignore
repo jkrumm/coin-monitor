@@ -16,6 +16,7 @@ lerna-debug.log*
 /dist
 /tmp
 /out-tsc
+sqlite.db
 
 # tests
 /coverage

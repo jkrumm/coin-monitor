@@ -5,7 +5,7 @@ import {
   firstJobMetadata,
   FirstJobPayload,
 } from '@cm/api-data/modules/metrics/processors/metrics-queue.manager';
-import { MetricsService } from '../services/metrics.service';
+import { MetricsService } from '@cm/api-data/modules/metrics/services/metrics.service';
 
 @Processor(queues.metrics.name)
 export class MetricsQueueProcessor {
