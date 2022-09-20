@@ -5,9 +5,9 @@
     "api-common": "libs/api-common",
     "api-data": "apps/api-data",
     "api-user": "apps/api-user",
-    "types": "libs/types",
     "docs": {
-     "root": "apps/docs"
-    }
+      "root": "apps/docs"
+    },
+    "types": "libs/types"
   }
 }

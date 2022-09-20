@@ -2,6 +2,10 @@ export interface Identifiable {
   id: string;
 }
 
+export interface IdentifiableDate {
+  date: string;
+}
+
 export interface UserTracked {
   createdBy: string | null;
   updatedBy: string | null;

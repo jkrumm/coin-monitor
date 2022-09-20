@@ -10,8 +10,8 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { BullModuleOptions } from '@nestjs/bull';
 import { JobOptions } from 'bull';
-import { booly } from 'libs/api-common/src/utils/booly';
-import { getEnv } from 'libs/api-common/src/utils/get-env';
+import { booly } from 'libs/api-common/src/utils/booly.util';
+import { getEnv } from 'libs/api-common/src/utils/get-env.util';
 
 const queue = 'coin-monitor';
 
@@ -29,7 +29,7 @@ export const queues: IQueueConfigs = {
   },
 };
 
-export const taskConfig: JobOptions = {
+export const jobConfig: JobOptions = {
   removeOnComplete: booly(getEnv('QUEUE_REMOVE_COMPLETED') || 'true'),
   removeOnFail: false,
   delay: undefined,
