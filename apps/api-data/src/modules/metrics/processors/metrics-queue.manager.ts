@@ -1,9 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Job, JobOptions, Queue } from 'bull';
-import { JobMetadata, QueueJob, queues, taskConfig } from '@cm/api-common';
+import {
+  AbstractQueueManager,
+  JobMetadata,
+  QueueJob,
+  queues,
+  taskConfig,
+} from '@cm/api-common';
 import { IsString } from 'class-validator';
-import { AbstractQueueManager } from 'libs/api-common/src/queue/queue-manager.abstract';
 
 export class FirstJobPayload {
   @IsString()

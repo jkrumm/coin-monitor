@@ -1,6 +1,6 @@
 import { getEnv } from '@cm/api-common';
 
-export const databaseConfig = () => ({
+export const mysqlConfig = () => ({
   MYSQL_HOST: getEnv('MYSQL_HOST') || 'cm-mysql',
   MYSQL_PORT: getEnv('MYSQL_PORT') || '3306',
   MYSQL_USER: getEnv('MYSQL_USER') || 'root',

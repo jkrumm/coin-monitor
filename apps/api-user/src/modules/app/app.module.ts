@@ -3,8 +3,8 @@ import { Module } from '@nestjs/common';
 import { AppController } from '@cm/api-user/modules/app/app.controller';
 import { AppService } from '@cm/api-user/modules/app/app.service';
 import {
-  databaseConfig,
-  DatabaseModule,
+  mysqlConfig,
+  MysqlModule,
   rmqConfig,
   rmqExchanges,
   RmqModule,
@@ -21,13 +21,13 @@ import { UserModule } from '@cm/api-user/modules/user/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [databaseConfig, rmqConfig, authConfig],
+      load: [mysqlConfig, rmqConfig, authConfig],
       isGlobal: true,
     }),
     RmqModule.register({
       exchanges: [rmqExchanges.AUTH],
     }),
-    DatabaseModule,
+    MysqlModule,
     TestModule,
     AuthModule,
     UserModule,
