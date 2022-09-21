@@ -8,31 +8,6 @@ import {
   QueueJob,
   queues,
 } from '@cm/api-common';
-import { IsISO8601, IsString } from 'class-validator';
-
-export class FirstJobPayload {
-  @IsString()
-  msg: string;
-
-  constructor(msg: string) {
-    this.msg = msg;
-  }
-}
-
-export const startPipelineJobMetadata: JobMetadata = {
-  name: 'start_pipeline',
-  payloadType: FirstJobPayload,
-};
-
-export class FetchCoinMetricsJobPayload {
-  @IsISO8601()
-  date: string;
-}
-
-export const fetchCoinMetricsJobMetadata: JobMetadata = {
-  name: 'fetch_coin_metrics',
-  payloadType: FetchCoinMetricsJobPayload,
-};
 
 @Injectable()
 export class MetricsQueueService {

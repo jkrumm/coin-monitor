@@ -4,9 +4,9 @@ import { Job } from 'bull';
 import {
   fetchCoinMetricsJobMetadata,
   FetchCoinMetricsJobPayload,
-  FirstJobPayload,
   startPipelineJobMetadata,
-} from '@cm/api-data/modules/metrics/processors/metrics-queue.manager';
+  StartPipelineJobPayload,
+} from '@cm/api-data/modules/metrics/constants/pipeline.constants';
 import { MetricsService } from '@cm/api-data/modules/metrics/services/metrics.service';
 import { PipelineService } from '@cm/api-data/modules/metrics/services/pipeline.service';
 
@@ -21,7 +21,7 @@ export class MetricsQueueProcessor {
     name: startPipelineJobMetadata.name,
     concurrency: 0,
   })
-  async firstJob({ data: { msg } }: Job<FirstJobPayload>): Promise<void> {
+  async startPipeline({ data: { msg } }: Job<StartPipelineJobPayload>): Promise<void> {
     await this.pipelineService.startPipeline();
   }
 
@@ -29,7 +29,7 @@ export class MetricsQueueProcessor {
     name: fetchCoinMetricsJobMetadata.name,
     concurrency: 0,
   })
-  async startPipeline({
+  async fetchCoinMetrics({
     data: { date },
   }: Job<FetchCoinMetricsJobPayload>): Promise<void> {
     await this.pipelineService.fetchCoinMetrics(date);
