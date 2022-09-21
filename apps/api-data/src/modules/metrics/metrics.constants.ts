@@ -11,6 +11,11 @@ export const requiredMetrics = [
 ];
 
 export class CoinMetricsRawResponse {
+  @IsString()
+  @IsNotEmpty()
+  @Expose()
+  date: string;
+
   @IsDefined()
   @Expose()
   @Transform(({ value }) => new Date(String(value)))
@@ -52,13 +57,6 @@ export class CoinMetricsRawResponse {
   @Expose()
   @ValidateIf(/* istanbul ignore next */ (_object, value) => value !== null)
   IssTotUSD: string | null = null;
-}
-
-export class CoinMetricsRawResponseWithDate extends CoinMetricsRawResponse {
-  @IsString()
-  @IsNotEmpty()
-  @Expose()
-  date: string;
 }
 
 export interface AvailableMetricsResponse {

@@ -1,8 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
-import {
-  MetricsQueueService,
-  startPipelineJobMetadata,
-} from '@cm/api-data/modules/metrics/processors/metrics-queue.manager';
+import { MetricsQueueService } from '@cm/api-data/modules/metrics/processors/metrics-queue.manager';
+import { startPipelineJobMetadata } from '@cm/api-data/modules/metrics/constants/pipeline.constants';
 
 @Controller('metrics-debug')
 export class MetricsDebugController {
