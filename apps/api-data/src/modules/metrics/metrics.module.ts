@@ -12,6 +12,7 @@ import { PipelineService } from '@cm/api-data/modules/metrics/services/pipeline.
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoinMetricsRaw } from '@cm/api-data/modules/metrics/entities/coin-metrics-raw.entity';
 import { PipelineUtilService } from '@cm/api-data/modules/metrics/util/pipeline-util.service';
+import { OhlcService } from '@cm/api-data/modules/metrics/services/ohlc.service';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PipelineUtilService } from '@cm/api-data/modules/metrics/util/pipeline-
     MetricsQueueManager,
     PipelineService,
     PipelineUtilService,
+    OhlcService,
   ],
 })
 export class MetricsModule {}

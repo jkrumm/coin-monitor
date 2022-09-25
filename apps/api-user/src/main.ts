@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { RmqGuard } from '@cm/api-common';
 import { AppModule } from '@cm/api-user/modules/app/app.module';
 import * as cookieParser from 'cookie-parser';
@@ -9,7 +9,7 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  // app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   app.useGlobalGuards(new RmqGuard());
 
