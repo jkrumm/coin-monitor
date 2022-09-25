@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   HttpCode,
-  InternalServerErrorException,
   Post,
   Req,
   Res,
@@ -17,8 +16,6 @@ import { AuthDto } from '@cm/api-user/modules/auth/dtos/auth.dto';
 import JwtAuthenticationGuard from '@cm/api-user/modules/auth/guards/jwt-authentication.guard';
 import { RequestWithUser } from '@cm/types';
 import { LocalAuthenticationGuard } from '@cm/api-user/modules/auth/guards/localAuthentication.guard';
-import { EmailNotUniqueException } from '@cm/api-user/modules/auth/exceptions/email-not-unique.exception';
-import { WrongCredentialsException } from '@cm/api-user/modules/auth/exceptions/wrong-credentials.exception';
 
 @Controller('auth')
 export class AuthController {
@@ -35,17 +32,10 @@ export class AuthController {
     @Body() registerDto: RegisterDto,
     @Res() response: Response,
   ): Promise<Response<AuthDto>> {
-    try {
-      const auth = await this.authService.register(registerDto);
-      const cookie = this.authService.getCookie(auth.authId);
-      response.setHeader('Set-Cookie', cookie);
-      return response.send(auth);
-    } catch (error) {
-      if (error instanceof EmailNotUniqueException) {
-        throw error;
-      }
-      throw new InternalServerErrorException();
-    }
+    const auth = await this.authService.register(registerDto);
+    const cookie = this.authService.getCookie(auth.authId);
+    response.setHeader('Set-Cookie', cookie);
+    return response.send(auth);
   }
 
   @UseGuards(LocalAuthenticationGuard)
@@ -55,18 +45,11 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Res() response: Response,
   ): Promise<Response<AuthDto>> {
-    try {
-      // TODO: implement protection against brute force attacks (api gateway)
-      const auth = await this.authService.authenticate(loginDto);
-      const cookie = this.authService.getCookie(auth.authId);
-      response.setHeader('Set-Cookie', cookie);
-      return response.send(auth);
-    } catch (error) {
-      if (error instanceof WrongCredentialsException) {
-        throw error;
-      }
-      throw new InternalServerErrorException();
-    }
+    // TODO: implement protection against brute force attacks (api gateway)
+    const auth = await this.authService.authenticate(loginDto);
+    const cookie = this.authService.getCookie(auth.authId);
+    response.setHeader('Set-Cookie', cookie);
+    return response.send(auth);
   }
 
   @UseGuards(JwtAuthenticationGuard)

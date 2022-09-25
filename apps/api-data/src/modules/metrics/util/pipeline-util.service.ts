@@ -63,7 +63,9 @@ export class PipelineUtilService {
       ).data,
       { excludeExtraneousValues: true },
     ).map((v) => ({ ...v, date: toIsoDateString(v.time) }));
-    rawResponse.map(async (v) => await validateOrReject(v));
+    for (const v of rawResponse) {
+      await validateOrReject(v);
+    }
     return rawResponse;
   }
 }

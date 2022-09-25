@@ -15,6 +15,11 @@ export const startPipelineJobMetadata: JobMetadata = {
   payloadType: StartPipelineJobPayload,
 };
 
+export const ohlcJobMetadata: JobMetadata = {
+  name: 'ohlc',
+  payloadType: undefined,
+};
+
 export class FetchCoinMetricsJobPayload {
   @IsISO8601()
   date: string;

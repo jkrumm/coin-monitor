@@ -1,5 +1,4 @@
 import {
-  IsDefined,
   IsString,
   Matches,
   MaxLength,
@@ -50,7 +49,6 @@ export class JobMetadata {
   })
   name: string;
 
-  @IsDefined()
   payloadType: any;
 
   constructor(taskName: string, payloadType: any) {
@@ -61,15 +59,16 @@ export class JobMetadata {
 
 export class QueueJob {
   meta: JobMetadata;
-  payload: object;
+  payload: any;
 
-  constructor(meta: JobMetadata, payload: JobMetadata['payloadType']) {
+  constructor(meta: JobMetadata, payload?: JobMetadata['payloadType']) {
     this.meta = meta;
     this.payload = payload;
   }
 
   async validate(): Promise<void | ValidationError> {
     await validateOrReject(plainToInstance(JobMetadata, this.meta));
+    if (this.meta.payloadType === undefined && this.payload === undefined) return;
     await validateOrReject(plainToInstance(this.meta.payloadType, this.payload), {
       whitelist: true,
       forbidNonWhitelisted: true,
