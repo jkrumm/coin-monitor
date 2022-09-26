@@ -16,7 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@cm/api-common": ["libs/api-common/src/index.ts"],
-      "@cm/pwa": ["apps/pwa/*"],
+      "@cm/pwa/*": ["apps/pwa/*"],
       "@cm/api-data/*": ["apps/api-data/src/*"],
       "@cm/api-user/*": ["apps/api-user/src/*"],
       "@cm/types": ["libs/types/src/index.ts"]

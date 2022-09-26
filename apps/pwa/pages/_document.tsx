@@ -1,4 +1,5 @@
 import Document, { Head, Html, Main, NextScript } from 'next/document';
+import { Classes } from '@blueprintjs/core';
 
 class MyDocument extends Document {
   render() {
@@ -9,7 +10,7 @@ class MyDocument extends Document {
           <link rel="apple-touch-icon" href="/icon.png" />
           <meta name="theme-color" content="#2F343C" />
         </Head>
-        <body>
+        <body className={'dark-wrapper ' + Classes.DARK}>
           <Main />
           <NextScript />
         </body>
