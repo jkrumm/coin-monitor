@@ -8,6 +8,97 @@
     "docs": {
       "root": "apps/docs"
     },
+    "pwa": {
+      "root": "apps/pwa",
+      "sourceRoot": "apps/pwa",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/next:build",
+          "outputs": ["{options.outputPath}"],
+          "defaultConfiguration": "production",
+          "options": {
+            "root": "apps/pwa",
+            "outputPath": "dist/apps/pwa"
+          },
+          "configurations": {
+            "development": {
+              "outputPath": "apps/pwa"
+            },
+            "production": {}
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/next:server",
+          "defaultConfiguration": "development",
+          "options": {
+            "buildTarget": "pwa:build",
+            "dev": true
+          },
+          "configurations": {
+            "development": {
+              "buildTarget": "pwa:build:development",
+              "dev": true
+            },
+            "production": {
+              "buildTarget": "pwa:build:production",
+              "dev": false
+            }
+          }
+        },
+        "export": {
+          "executor": "@nrwl/next:export",
+          "options": {
+            "buildTarget": "pwa:build:production"
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/pwa"],
+          "options": {
+            "jestConfig": "apps/pwa/jest.config.ts",
+            "passWithNoTests": true
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/pwa/**/*.{ts,tsx,js,jsx}"]
+          }
+        }
+      },
+      "tags": []
+    },
+    "pwa-e2e": {
+      "root": "apps/pwa-e2e",
+      "sourceRoot": "apps/pwa-e2e/src",
+      "projectType": "application",
+      "targets": {
+        "e2e": {
+          "executor": "@nrwl/cypress:cypress",
+          "options": {
+            "cypressConfig": "apps/pwa-e2e/cypress.config.ts",
+            "devServerTarget": "pwa:serve:development",
+            "testingType": "e2e"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "pwa:serve:production"
+            }
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/pwa-e2e/**/*.{js,ts}"]
+          }
+        }
+      },
+      "tags": [],
+      "implicitDependencies": ["pwa"]
+    },
     "types": "libs/types"
   }
 }

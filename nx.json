@@ -25,5 +25,18 @@
       "dependsOn": ["^build"]
     }
   },
-  "defaultProject": "api-data"
+  "defaultProject": "api-data",
+  "generators": {
+    "@nrwl/react": {
+      "application": {
+        "babel": true
+      }
+    },
+    "@nrwl/next": {
+      "application": {
+        "style": "scss",
+        "linter": "eslint"
+      }
+    }
+  }
 }
