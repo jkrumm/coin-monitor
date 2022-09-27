@@ -49,6 +49,7 @@ export class AuthController {
     const auth = await this.authService.authenticate(loginDto);
     const cookie = this.authService.getCookie(auth.authId);
     response.setHeader('Set-Cookie', cookie);
+    // TODO: refactor res.cookie('token', token, { httpOnly: true });
     return response.send(auth);
   }
 

@@ -36,5 +36,5 @@ plugins:
   - name: rate-limiting
     service: auth-user-service
     config:
-      minute: 5
+      minute: 5000
       policy: local
