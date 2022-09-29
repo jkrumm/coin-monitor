@@ -1,12 +1,17 @@
 import styles from './index.module.scss';
 import { Card } from '@cm/pwa/components/cards/card';
 import { H1 } from '@blueprintjs/core';
+import useAuth from '@cm/pwa/state/useAuth';
 
 export function Index({ btc }) {
+  const { auth, loading, error } = useAuth();
   return (
     <div className={styles.page}>
       <div id="welcome">
         <H1>Dashboard</H1>
+        {auth && <H1>USER: {auth.authId}</H1>}
+        {loading && <H1>LOADING: {loading.toString()}</H1>}
+        {error && <H1>ERROR: {error.toString()}</H1>}
         <div className="w-full grid overflow-hidden gap-2 xl:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 grid-rows-8 md:grid-rows-7 lg:grid-rows-3 md:grid-flow-col">
           <div className="box row-span-2">
             <Card heading="Bitcoin">
