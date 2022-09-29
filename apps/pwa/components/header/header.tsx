@@ -3,6 +3,7 @@ import { Disclosure, Menu, Transition } from '@headlessui/react';
 import {
   AnchorButton,
   Button,
+  ButtonGroup,
   Card,
   Classes,
   Elevation,
@@ -10,13 +11,13 @@ import {
   H2,
   Icon,
   IconSize,
+  Intent,
   Overlay,
   Tab,
   Tabs,
 } from '@blueprintjs/core';
 import Link from 'next/link';
-import { login } from '@cm/pwa/state/auth.api';
-import { useAuth } from '@cm/pwa/state/auth.state';
+import useAuth from '@cm/pwa/state/useAuth';
 
 export function useForm(initialValues?: Record<string, any>) {
   const [values, setValues] = useState(initialValues || {});
@@ -52,12 +53,12 @@ function classNames(...classes) {
 export default function Header() {
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const { auth, getAuth } = useAuth();
+  const { auth, login, logout } = useAuth();
 
   useEffect(() => {
-    getAuth();
-    console.log('auth', auth);
-    setIsOpen(auth === null);
+    if (auth != undefined) {
+      setIsOpen(false);
+    }
   }, [auth]);
 
   return (
@@ -113,7 +114,7 @@ export default function Header() {
                       </Link>
                     </div>
                   </div>
-                  <div className="hidden md:ml-5 lg:ml-10 md:block">
+                  <div className="hidden mt-0.5 md:ml-5 lg:ml-10 md:block">
                     <div className="flex md:space-x-2 lg:space-x-6">
                       {navigation.map((item) => (
                         <AnchorButton
@@ -130,78 +131,95 @@ export default function Header() {
                   </div>
                 </div>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-2 md:static md:inset-auto md:ml-6 md:pr-0">
-                  <button
-                    type="button"
-                    className="rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-                  >
-                    <span className="sr-only">View notifications</span>
-                    <Icon icon="notifications" size={IconSize.STANDARD} />
-                  </button>
+                  {auth ? (
+                    <>
+                      <button
+                        type="button"
+                        className="rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                      >
+                        <span className="sr-only">View notifications</span>
+                        <Icon icon="notifications" size={IconSize.STANDARD} />
+                      </button>
 
-                  {/* Profile dropdown */}
-                  <Menu as="div" className="relative ml-3">
-                    <div>
-                      <Menu.Button className="flex rounded-full bg-gray-800 text-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
-                        <span className="sr-only">Open user menu</span>
-                        <img
-                          className="h-8 w-8 rounded-full"
-                          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                          alt=""
-                        />
-                      </Menu.Button>
-                    </div>
-                    <Transition
-                      as={Fragment}
-                      enter="transition ease-out duration-100"
-                      enterFrom="transform opacity-0 scale-95"
-                      enterTo="transform opacity-100 scale-100"
-                      leave="transition ease-in duration-75"
-                      leaveFrom="transform opacity-100 scale-100"
-                      leaveTo="transform opacity-0 scale-95"
-                    >
-                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <Menu.Item>
-                          {({ active }) => (
-                            <a
-                              href="#"
-                              className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'block px-4 py-2 text-md text-gray-700',
+                      {/* Profile dropdown */}
+                      <Menu as="div" className="relative ml-3">
+                        <div>
+                          <Menu.Button className="flex rounded-full bg-gray-800 text-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                            <span className="sr-only">Open user menu</span>
+                            <img
+                              className="h-8 w-8 rounded-full"
+                              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                              alt=""
+                            />
+                          </Menu.Button>
+                        </div>
+                        <Transition
+                          as={Fragment}
+                          enter="transition ease-out duration-100"
+                          enterFrom="transform opacity-0 scale-95"
+                          enterTo="transform opacity-100 scale-100"
+                          leave="transition ease-in duration-75"
+                          leaveFrom="transform opacity-100 scale-100"
+                          leaveTo="transform opacity-0 scale-95"
+                        >
+                          <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <Menu.Item>
+                              {({ active }) => (
+                                <a
+                                  href="#"
+                                  className={classNames(
+                                    active ? 'bg-gray-100' : '',
+                                    'block px-4 py-2 text-md text-gray-700',
+                                  )}
+                                >
+                                  Your Profile
+                                </a>
                               )}
-                            >
-                              Your Profile
-                            </a>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <a
-                              href="#"
-                              className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'block px-4 py-2 text-md text-gray-700',
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }) => (
+                                <a
+                                  href="#"
+                                  className={classNames(
+                                    active ? 'bg-gray-100' : '',
+                                    'block px-4 py-2 text-md text-gray-700',
+                                  )}
+                                >
+                                  Settings
+                                </a>
                               )}
-                            >
-                              Settings
-                            </a>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <a
-                              href="#"
-                              className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'block px-4 py-2 text-md text-gray-700',
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }) => (
+                                <a
+                                  className={classNames(
+                                    active ? 'bg-gray-100' : '',
+                                    'block px-4 py-2 text-md text-gray-700',
+                                  )}
+                                  onClick={logout}
+                                >
+                                  Sign out
+                                </a>
                               )}
-                            >
-                              Sign out
-                            </a>
-                          )}
-                        </Menu.Item>
-                      </Menu.Items>
-                    </Transition>
-                  </Menu>
+                            </Menu.Item>
+                          </Menu.Items>
+                        </Transition>
+                      </Menu>
+                    </>
+                  ) : (
+                    <ButtonGroup>
+                      <Button large={true} onClick={() => setIsOpen(true)}>
+                        Login
+                      </Button>
+                      <Button
+                        large={true}
+                        intent={Intent.SUCCESS}
+                        onClick={() => setIsOpen(true)}
+                      >
+                        SignUp
+                      </Button>
+                    </ButtonGroup>
+                  )}
                 </div>
               </div>
             </header>
@@ -249,7 +267,7 @@ export default function Header() {
               id="login"
               // disabled={loginTab}
               title={<H2>Login</H2>}
-              panel={<Login />}
+              panel={<Login login={login} />}
             />
             <Tab
               id="register"
@@ -267,9 +285,8 @@ export default function Header() {
   );
 }
 
-export function Login() {
-  // const { login } = useAuth();
-  const { values, onChange } = useForm({});
+export function Login({ login }) {
+  const { values, onChange } = useForm({ email: 'user@mail.de', password: '' });
   const [error, setError] = React.useState<any>(null);
   return (
     <div>
@@ -278,10 +295,8 @@ export function Login() {
         onSubmit={async (e) => {
           e.preventDefault();
           try {
-            await login({
-              email: values.email,
-              password: values.password,
-            });
+            console.log(values);
+            await login(values.email, values.password);
           } catch (err) {
             setError(err);
           }
@@ -292,14 +307,14 @@ export function Login() {
           placeholder="email"
           name="email"
           onChange={onChange}
-          value="user@mail.de"
+          value={values.email}
         />
         <input
           type="password"
           placeholder="password"
           name="password"
           onChange={onChange}
-          value="asdoAjh2341!"
+          value={values.password}
         />
         <button type="submit">Submit</button>
       </form>
