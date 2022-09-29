@@ -24,13 +24,19 @@ export class Auth implements Identifiable, TimeTracked {
     length: 20,
     nullable: true,
   })
-  public username: string | null;
+  public username: string | null = null;
 
   @Column({
     length: 100,
   })
   @Exclude()
   public password: string;
+
+  @Column({
+    nullable: true,
+  })
+  @Exclude()
+  public refreshToken: string | null = null;
 
   //TimeTracked
   @CreateDateColumn()
