@@ -12,6 +12,13 @@ export interface AuthInterface {
   email: string;
 }
 
+export class AuthWithExpiryInterface implements AuthInterface {
+  authId: string;
+  username: string | null;
+  email: string;
+  expirationDate: number;
+}
+
 export interface LoginInterface {
   email: string;
   password: string;

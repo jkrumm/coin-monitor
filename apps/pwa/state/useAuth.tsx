@@ -6,10 +6,8 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { AuthInterface } from '@cm/types';
-// import { useHistory, useLocation } from "react-router-dom";
-// import * as sessionsApi from "./api/sessions";
-// import * as usersApi from "./api/users";
+import { AuthInterface, AuthWithExpiryInterface } from '@cm/types';
+import { DateTime } from 'luxon';
 
 // const useReactPath = () => {
 //   const [path, setPath] = React.useState(window.location.pathname);
@@ -26,9 +24,19 @@ import { AuthInterface } from '@cm/types';
 //   return path;
 // };
 
+const toAuthInterface = ({
+  authId,
+  username,
+  email,
+}: AuthWithExpiryInterface): AuthInterface => {
+  return {
+    authId,
+    email,
+    username,
+  };
+};
+
 interface AuthContextType {
-  // We defined the user type in `index.d.ts`, but it's
-  // a simple object with email, name and password.
   auth?: AuthInterface;
   loading: boolean;
   error?: any;
@@ -39,56 +47,66 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-// Export the provider as we need to wrap the entire app with it
 export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
   const [auth, setAuth] = useState<AuthInterface>();
+  const [expirationDate, setExpirationDate] = useState<number>(0);
   const [error, setError] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
-  // We are using `react-router` for this example,
-  // but feel free to omit this or use the
-  // router of your choice.
-  // const history = useHistory();
-  // const location = useLocation();
 
-  // If we change page, reset the error state.
-  // TODO: here
-  // const path = useReactPath();
+  // TODO: If we change page, reset the error state.
   useEffect(() => {
     if (error) setError(null);
   }, []);
 
-  // Check if there is a currently active session
-  // when the provider is mounted for the first time.
-  //
-  // If there is an error, it means there is no session.
-  //
-  // Finally, just signal the component that the initial load
-  // is over.
   useEffect(() => {
-    fetch('/api/auth/')
+    if (expirationDate === 0) {
+      fetch('/api/auth/')
+        .then((res) => {
+          if (res.status !== 200) {
+            throw new Error();
+          }
+          return res.json();
+        })
+        .then((auth: AuthWithExpiryInterface) => {
+          setAuth(toAuthInterface(auth));
+          setExpirationDate(auth.expirationDate);
+        })
+        .catch(() => refreshToken())
+        .finally(() => setLoadingInitial(false));
+      return;
+    }
+
+    const timeToRefreshToken =
+      (expirationDate - DateTime.now().toUTC().toSeconds() - 15) * 1000;
+
+    let timer = setTimeout(() => {
+      refreshToken();
+    }, timeToRefreshToken);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [expirationDate]);
+
+  function refreshToken() {
+    fetch('/api/auth/refresh')
       .then((res) => {
         if (res.status !== 200) {
-          throw new Error(res.status.toString());
+          throw new Error();
         }
         return res.json();
       })
-      .then((auth) => {
-        console.log('GET AUTH WORKED');
-        setAuth(auth);
+      .then((auth: AuthWithExpiryInterface) => {
+        setAuth(toAuthInterface(auth));
+        setExpirationDate(auth.expirationDate);
       })
-      .catch((_error) => {})
-      .finally(() => setLoadingInitial(false));
-  }, []);
+      .catch(() => {
+        setAuth(null);
+        setExpirationDate(0);
+      });
+  }
 
-  // Flags the component loading state and posts the login
-  // data to the server.
-  //
-  // An error means that the email/password combination is
-  // not valid.
-  //
-  // Finally, just signal the component that loading the
-  // loading state is over.
   function login(email: string, password: string) {
     setLoading(true);
 
@@ -105,49 +123,27 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
         }
         return res.json();
       })
-      .then((auth) => {
-        console.log('LOGIN WORKED');
-        setAuth(auth);
+      .then((auth: AuthWithExpiryInterface) => {
+        setAuth(toAuthInterface(auth));
+        setExpirationDate(auth.expirationDate);
       })
       .catch((error) => setError(error))
       .finally(() => setLoading(false));
   }
 
-  // Sends sign up details to the server. On success we just apply
-  // the created user to the state.
-  // function signUp(email: string, name: string, password: string) {
-  //   setLoading(true);
-  //
-  //   usersApi
-  //     .signUp({ email, name, password })
-  //     .then((user) => {
-  //       setUser(user);
-  //       history.push('/');
-  //     })
-  //     .catch((error) => setError(error))
-  //     .finally(() => setLoading(false));
-  // }
-
-  // Call the logout endpoint and then remove the user
-  // from the state.
   function logout() {
     setLoading(true);
     fetch('/api/auth/logout')
       .then(() => {
         setAuth(undefined);
+        setExpirationDate(0);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setError(null);
+        setLoading(false);
+      });
   }
 
-  // Make the provider update only when it should.
-  // We only want to force re-renders if the user,
-  // loading or error states change.
-  //
-  // Whenever the `value` passed into a provider changes,
-  // the whole tree under the provider re-renders, and
-  // that can be very costly! Even in this case, where
-  // you only get re-renders when logging in and out
-  // we want to keep things very performant.
   const memoedValue = useMemo(
     () => ({
       auth,
@@ -160,8 +156,6 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     [auth, loading, error],
   );
 
-  // We only want to render the underlying app after we
-  // assert for the presence of a current user.
   return (
     <AuthContext.Provider value={memoedValue}>
       {!loadingInitial && children}
@@ -169,8 +163,6 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   );
 }
 
-// Let's only export the `useAuth` hook instead of the context.
-// We only want to use the hook directly and never the context component.
 export default function useAuth() {
   return useContext(AuthContext);
 }

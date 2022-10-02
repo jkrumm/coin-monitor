@@ -5,7 +5,6 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { RegisterDto } from '@cm/api-user/modules/auth/dtos/register.dto';
-import { AuthDto } from '@cm/api-user/modules/auth/dtos/auth.dto';
 import { EmailNotUniqueException } from '@cm/api-user/modules/auth/exceptions/email-not-unique.exception';
 import { WrongCredentialsException } from '@cm/api-user/modules/auth/exceptions/wrong-credentials.exception';
 import { JwtService } from '@nestjs/jwt';
@@ -21,6 +20,8 @@ import {
   AuthRegisteredEventPayload,
   RmqService,
 } from '@cm/api-common';
+import { AuthInterface, AuthWithExpiryInterface } from '@cm/types';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class AuthService {
@@ -57,7 +58,11 @@ export class AuthService {
    * REGISTER
    */
 
-  public async register({ email, username, password }: RegisterDto): Promise<AuthDto> {
+  public async register({
+    email,
+    username,
+    password,
+  }: RegisterDto): Promise<AuthInterface> {
     if (await this.authRepo.findOne({ where: { email } })) {
       throw new EmailNotUniqueException();
     }
@@ -77,7 +82,7 @@ export class AuthService {
    * AUTHENTICATE
    */
 
-  public async authenticate({ email, password }: LoginDto): Promise<AuthDto> {
+  public async authenticate({ email, password }: LoginDto): Promise<AuthInterface> {
     try {
       const auth = await this.authRepo.findOneOrFail({ where: { email } });
       await this.verifyPassword(auth.password, password);
@@ -87,20 +92,31 @@ export class AuthService {
     }
   }
 
-  public getAccessTokenCookie(authId: string) {
+  public getAccessTokenCookie(auth: AuthInterface) {
     // TODO: increase Cookie and JWT security
     // https://stormpath.com/blog/build-secure-user-interfaces-using-jwts
     // https://stormpath.com/blog/token-auth-spa
+    const jwtAccessTokenExpirationTime = this.configService.get(
+      'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+    );
     const token = this.jwtService.sign(
-      { authId },
+      { authId: auth.authId },
       {
         secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
-        expiresIn: `${this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}s`,
+        expiresIn: `${jwtAccessTokenExpirationTime}s`,
       },
     );
-    return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
-      'JWT_REFRESH_TOKEN_EXPIRATION_TIME',
-    )}`;
+    const accessTokenCookie = `Authentication=${token}; HttpOnly; Path=/; Max-Age=${jwtAccessTokenExpirationTime}`;
+    const authWithExpiry: AuthWithExpiryInterface = {
+      ...auth,
+      expirationDate: DateTime.now()
+        .plus({ seconds: jwtAccessTokenExpirationTime })
+        .toSeconds(),
+    };
+    return {
+      accessTokenCookie,
+      authWithExpiry,
+    };
   }
 
   /*
