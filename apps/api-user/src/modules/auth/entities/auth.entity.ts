@@ -8,7 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AuthDto } from '@cm/api-user/modules/auth/dtos/auth.dto';
+
+import { AuthInterface } from '@cm/types';
 
 @Entity({ name: 'auth' })
 export class Auth implements Identifiable, TimeTracked {
@@ -50,7 +51,7 @@ export class Auth implements Identifiable, TimeTracked {
     this.password = password;
   }
 
-  toDto(): AuthDto {
+  toDto(): AuthInterface {
     return {
       authId: this.id,
       username: this.username,
