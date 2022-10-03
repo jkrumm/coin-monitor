@@ -1,5 +1,6 @@
 @import "~@blueprintjs/core/lib/scss/variables";
 
+// Fixes dark mode
 .dark-wrapper {
   background-color: $pt-dark-app-background-color;
 
@@ -28,6 +29,10 @@
   url("//db.onlinewebfonts.com/t/a082fd3df68a0b54e0d4d794bc38d268.svg#Blender Pro") format("svg");
 }
 
+body {
+  position: relative;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: Blender Pro, -apple-system, sans-serif;
 }
@@ -44,4 +49,12 @@ h3 {
   h-32
   min-h-full
   rounded;
+}
+
+.bp4-overlay-content  {
+  @apply
+  top-1/2
+  left-1/2
+  -translate-x-2/4
+  -translate-y-2/4
 }

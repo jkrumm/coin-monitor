@@ -43,7 +43,6 @@ export class AuthController {
   }
 
   @HttpCode(200)
-  // @UseGuards(LocalAuthenticationGuard)
   @Post('login')
   async logIn(
     @Body() loginDto: LoginDto,
@@ -62,6 +61,7 @@ export class AuthController {
     return response.send(authWithExpiry);
   }
 
+  @HttpCode(200)
   @UseGuards(JwtRefreshGuard)
   @Get('refresh')
   refresh(@Req() request: RequestWithUser): AuthWithExpiryInterface {
@@ -73,6 +73,7 @@ export class AuthController {
     return authWithExpiry;
   }
 
+  @HttpCode(200)
   @UseGuards(JwtAuthenticationGuard)
   @Get('logout')
   async logout(@Req() request: RequestWithUser): Promise<Response> {
@@ -81,6 +82,6 @@ export class AuthController {
       'Authentication=; HttpOnly; Path=/; Max-Age=0',
       'Refresh=; HttpOnly; Path=/; Max-Age=0',
     ]);
-    return request.res.send();
+    return;
   }
 }
