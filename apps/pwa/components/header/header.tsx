@@ -9,8 +9,10 @@ import {
   Elevation,
   H1,
   H2,
+  H3,
   Icon,
   IconSize,
+  InputGroup,
   Intent,
   Overlay,
   Tab,
@@ -51,9 +53,9 @@ function classNames(...classes) {
 }
 
 export default function Header() {
-  const [tab, setTab] = useState<'login' | 'register'>('login');
+  const [tab, setTab] = useState<'login' | 'signUp'>('login');
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const { auth, login, logout } = useAuth();
+  const { auth, login, logout, register } = useAuth();
 
   useEffect(() => {
     if (auth != undefined) {
@@ -208,13 +210,22 @@ export default function Header() {
                     </>
                   ) : (
                     <ButtonGroup>
-                      <Button large={true} onClick={() => setIsOpen(true)}>
+                      <Button
+                        large
+                        onClick={() => {
+                          setTab('login');
+                          setIsOpen(true);
+                        }}
+                      >
                         Login
                       </Button>
                       <Button
-                        large={true}
+                        large
                         intent={Intent.SUCCESS}
-                        onClick={() => setIsOpen(true)}
+                        onClick={() => {
+                          setTab('signUp');
+                          setIsOpen(true);
+                        }}
                       >
                         SignUp
                       </Button>
@@ -250,16 +261,17 @@ export default function Header() {
       <Overlay
         onClose={() => setIsOpen(false)}
         isOpen={isOpen}
-        className={Classes.OVERLAY_SCROLL_CONTAINER + ' login-popup-wrapper'}
-        usePortal={true}
-        canOutsideClickClose={false}
-        canEscapeKeyClose={false}
-        hasBackdrop={true}
+        className={Classes.OVERLAY_SCROLL_CONTAINER}
+        usePortal
+        canOutsideClickClose
+        canEscapeKeyClose
+        hasBackdrop
+        autoFocus
       >
-        <Card elevation={Elevation.THREE} className={Classes.DARK}>
+        <Card elevation={Elevation.THREE} className="w-4/5 max-w-sm">
           <Tabs
             id="LoginSignUp"
-            onChange={(loginTab: 'login' | 'register') => setTab(loginTab)}
+            onChange={(loginTab: 'login' | 'signUp') => setTab(loginTab)}
             selectedTabId={tab}
             large={true}
           >
@@ -270,10 +282,10 @@ export default function Header() {
               panel={<Login login={login} />}
             />
             <Tab
-              id="register"
+              id="signUp"
               // disabled={loginTab}
-              title={<H2>Register</H2>}
-              panel={<Register />}
+              title={<H2>Sign Up</H2>}
+              panel={<Register register={register} />}
             />
           </Tabs>
           <Button large={true} fill={true} onClick={() => setIsOpen(false)}>
@@ -286,76 +298,105 @@ export default function Header() {
 }
 
 export function Login({ login }) {
-  const { values, onChange } = useForm({ email: 'user@mail.de', password: '' });
+  const { values, onChange } = useForm({
+    email: 'user@mail.de',
+    password: '',
+  });
   const [error, setError] = React.useState<any>(null);
   return (
     <div>
-      Login
       <form
         onSubmit={async (e) => {
           e.preventDefault();
           try {
-            console.log(values);
             await login(values.email, values.password);
           } catch (err) {
             setError(err);
           }
         }}
       >
-        <input
-          autoComplete="new-password"
-          placeholder="email"
+        <H3 className="mt-10">E-Mail</H3>
+        <InputGroup
           name="email"
           onChange={onChange}
           value={values.email}
+          large
+          fill
+          leftIcon="envelope"
         />
-        <input
+        <H3 className="mt-7">Password</H3>
+        <InputGroup
+          autoComplete="new-password"
           type="password"
-          placeholder="password"
           name="password"
           onChange={onChange}
           value={values.password}
+          large
+          fill
+          leftIcon="key"
         />
-        <button type="submit">Submit</button>
+        {error && <div style={{ color: 'tomato' }}>{JSON.stringify(error, null, 2)}</div>}
+        <Button large intent={Intent.SUCCESS} fill type="submit" className="mb-5 mt-10">
+          Submit
+        </Button>
       </form>
-      {error && <div style={{ color: 'tomato' }}>{JSON.stringify(error, null, 2)}</div>}
     </div>
   );
 }
 
-export function Register() {
-  // const { register } = useAuth();
-  const { values, onChange } = useForm({});
+export function Register({ register }) {
+  const { values, onChange } = useForm({
+    email: '',
+    username: '',
+    password: '',
+  });
   const [error, setError] = useState<any>(null);
 
   return (
     <div>
-      Register
       <form
         onSubmit={async (e) => {
           e.preventDefault();
           try {
-            // await register(values);
+            await register(values.email, values.username, values.password);
           } catch (err) {
             setError(err);
           }
         }}
       >
-        <input
-          autoComplete="new-password"
-          placeholder="email"
+        <H3 className="mt-10">E-Mail</H3>
+        <InputGroup
           name="email"
           onChange={onChange}
+          value={values.email}
+          large
+          fill
+          leftIcon="envelope"
         />
-        <input placeholder="name" name="name" onChange={onChange} />
-        <input
+        <H3 className="mt-7">Username</H3>
+        <InputGroup
+          name="username"
+          onChange={onChange}
+          value={values.username}
+          large
+          fill
+          leftIcon="chat"
+        />
+        <H3 className="mt-7">Password</H3>
+        <InputGroup
+          autoComplete="new-password"
           type="password"
-          placeholder="password"
           name="password"
           onChange={onChange}
+          value={values.password}
+          large
+          fill
+          leftIcon="key"
         />
-        <button type="submit">Submit</button>
         {error && <div style={{ color: 'tomato' }}>{JSON.stringify(error, null, 2)}</div>}
+        <Button large intent={Intent.SUCCESS} fill type="submit" className="mb-5 mt-10">
+          Submit
+        </Button>
       </form>
     </div>
   );

@@ -41,7 +41,7 @@ interface AuthContextType {
   loading: boolean;
   error?: any;
   login: (email: string, password: string) => void;
-  // signUp: (email: string, name: string, password: string) => void;
+  register: (email: string, name: string, password: string) => void;
   logout: () => void;
 }
 
@@ -131,6 +131,30 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       .finally(() => setLoading(false));
   }
 
+  function register(email: string, username: string, password: string) {
+    setLoading(true);
+
+    fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, username, password }),
+    })
+      .then((res) => {
+        if (res.status !== 201) {
+          throw new Error(res.status.toString());
+        }
+        return res.json();
+      })
+      .then((auth: AuthWithExpiryInterface) => {
+        setAuth(toAuthInterface(auth));
+        setExpirationDate(auth.expirationDate);
+      })
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  }
+
   function logout() {
     setLoading(true);
     fetch('/api/auth/logout')
@@ -150,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       loading,
       error,
       login,
-      // signUp,
+      register,
       logout,
     }),
     [auth, loading, error],
