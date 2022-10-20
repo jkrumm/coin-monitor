@@ -31,6 +31,12 @@ services:
       - name: data-service-route
         paths:
           - /data-service
+  - name: metrics-data-service
+    url: http://host.docker.internal:3334/metrics
+    routes:
+      - name: metrics-data-service-route
+        paths:
+          - /metrics
 
 plugins:
   - name: rate-limiting
