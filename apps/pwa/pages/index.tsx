@@ -2,9 +2,12 @@ import styles from './index.module.scss';
 import { Card } from '@cm/pwa/components/cards/card';
 import { H1 } from '@blueprintjs/core';
 import useAuth from '@cm/pwa/state/useAuth';
+import CardItem from '@cm/pwa/components/cards/card-item';
+import Script from 'next/script';
 
-export function Index({ btc }) {
+export function Index({ btc, coinMetricsRaw }) {
   const { auth, loading, error } = useAuth();
+  console.log(coinMetricsRaw);
   return (
     <div className={styles.page}>
       <div id="welcome">
@@ -12,24 +15,21 @@ export function Index({ btc }) {
         {auth && <H1>USER: {auth.authId}</H1>}
         {loading && <H1>LOADING: {loading.toString()}</H1>}
         {error && <H1>ERROR: {error.toString()}</H1>}
-        <div className="w-full grid overflow-hidden gap-2 xl:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 grid-rows-8 md:grid-rows-7 lg:grid-rows-3 md:grid-flow-col">
+        <div
+          id="boxes"
+          className="boxes w-full grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 grid-rows-8 md:grid-rows-7 lg:grid-rows-3 md:grid-flow-col"
+        >
           <div className="box row-span-2">
             <Card heading="Bitcoin">
-              <div>
-                Price
-                {btc.usd.toLocaleString('en-US', {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}{' '}
-                $
-              </div>
-              <div>
-                Price{' '}
-                {Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                }).format(btc.usd)}
-              </div>
+              <CardItem
+                title="Price"
+                value={
+                  btc.usd.toLocaleString('en-US', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  }) + ' $'
+                }
+              />
             </Card>
           </div>
           <div className="box">
@@ -69,6 +69,7 @@ export function Index({ btc }) {
           </div>
         </div>
       </div>
+      <Script src="/script.js" />
     </div>
   );
 }
@@ -81,11 +82,17 @@ export async function getStaticProps() {
   );
   const btc = (await res.json()).bitcoin;
 
+  const resCoinMetricsRaw = await fetch(
+    'http://localhost:8000/api/metrics/raw-coinmetrics',
+  );
+  const coinMetricsRaw = await resCoinMetricsRaw.json();
+
   // By returning { props: { posts } }, the Blog component
   // will receive `posts` as a prop at build time
   return {
     props: {
       btc,
+      coinMetricsRaw,
     },
   };
 }

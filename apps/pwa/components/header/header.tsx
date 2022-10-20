@@ -68,8 +68,8 @@ export default function Header() {
       <Disclosure as="nav">
         {({ open }) => (
           <>
-            <header className="px-2 md:px-4 xl:px-8 border-bBorder border-b-2">
-              <div className="relative flex h-16 items-center justify-between">
+            <header className="px-2 md:px-4 xl:px-8 border-bBorder border-b">
+              <div className="relative flex h-20 items-center justify-between">
                 <div className="absolute inset-y-0 left-0 flex items-center md:hidden">
                   {/* Mobile menu button*/}
                   <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
