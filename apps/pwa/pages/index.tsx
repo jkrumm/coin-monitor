@@ -2,7 +2,7 @@ import styles from './index.module.scss';
 import { Card } from '@cm/pwa/components/cards/card';
 import { H1 } from '@blueprintjs/core';
 import useAuth from '@cm/pwa/state/useAuth';
-import CardItem from '@cm/pwa/components/cards/card-item';
+import CardItem, { CardItemTypes } from '@cm/pwa/components/cards/card-item';
 import Script from 'next/script';
 
 export function Index({ btc, coinMetricsRaw }) {
@@ -16,10 +16,10 @@ export function Index({ btc, coinMetricsRaw }) {
         {loading && <H1>LOADING: {loading.toString()}</H1>}
         {error && <H1>ERROR: {error.toString()}</H1>}
         <div
-          id="boxes"
-          className="boxes w-full grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 grid-rows-8 md:grid-rows-7 lg:grid-rows-3 md:grid-flow-col"
+          id="cards"
+          className="cards w-full grid gap-2 xl:gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 grid-rows-8 md:grid-rows-7 lg:grid-rows-3 md:grid-flow-col"
         >
-          <div className="box row-span-2">
+          <div className="card row-span-2">
             <Card heading="Bitcoin">
               <CardItem
                 title="Price"
@@ -30,39 +30,64 @@ export function Index({ btc, coinMetricsRaw }) {
                   }) + ' $'
                 }
               />
+              <CardItem
+                title="1D %"
+                value={
+                  btc.usd_24h_change.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }) + ' %'
+                }
+              />
             </Card>
           </div>
-          <div className="box">
+          <div className="card">
             <Card heading="Crpyto Market">
               <div>WORKS</div>
             </Card>
           </div>
-          <div className="box md:row-start-1 lg:row-start-auto row-span-2">
+          <div className="card md:row-start-1 lg:row-start-auto row-span-2">
             <Card heading="Sentiment">
               <div>WORKS</div>
             </Card>
           </div>
-          <div className="box">
+          <div className="card">
             <Card heading="Activity">
               <div>WORKS</div>
             </Card>
           </div>
-          <div className="box md:row-start-4 lg:row-start-auto md:col-start-1 lg:col-start-auto row-span-3">
+          <div className="card md:row-start-4 lg:row-start-auto md:col-start-1 lg:col-start-auto row-span-3">
             <Card heading="Momentum Indicators">
-              <div>WORKS</div>
+              <CardItem title="3D MACD" value="BUY" type={CardItemTypes.BUY_SELL} />
+              <CardItem
+                title="3D Supertrend"
+                value="SELL"
+                type={CardItemTypes.BUY_SELL}
+              />
             </Card>
           </div>
-          <div className="box row-span-3">
+          <div className="card row-span-3">
             <Card heading="MarketCycle">
-              <div>WORKS</div>
+              <CardItem
+                title="2Y MA BTC Investor Tool"
+                value={5}
+                type={CardItemTypes.PERCENT}
+              />
+              <CardItem title="200W MA Heatmap" value={20} type={CardItemTypes.PERCENT} />
+              <CardItem title="Puell Multiple" value={66} type={CardItemTypes.PERCENT} />
+              <CardItem
+                title="Logarithmic Growth Curve"
+                value={95}
+                type={CardItemTypes.PERCENT}
+              />
             </Card>
           </div>
-          <div className="box md:row-start-7 lg:row-start-auto md:col-start-1 lg:col-start-auto">
+          <div className="card md:row-start-7 lg:row-start-auto md:col-start-1 lg:col-start-auto">
             <Card heading="Top Indicators">
               <div>WORKS</div>
             </Card>
           </div>
-          <div className="box md:row-start-7 lg:row-start-auto row-span-2">
+          <div className="card md:row-start-7 lg:row-start-auto row-span-2">
             <Card heading="Bottom Indicators">
               <div>WORKS</div>
             </Card>

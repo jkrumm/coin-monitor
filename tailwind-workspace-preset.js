@@ -1,6 +1,9 @@
 module.exports = {
   theme: {
     extend: {
+      transitionDuration: {
+        DEFAULT: '200ms',
+      },
       colors: {
         bDarkGray: {
           1: '#1c2127',

@@ -41,6 +41,11 @@ h3 {
   font-size: 19px;
 }
 
+.bp4-dark .bp4-button.bp4-minimal, .bp4-dark .bp4-button.bp4-large {
+  @apply
+  transition;
+}
+
 .bp4-overlay-content  {
   @apply
   top-1/2
@@ -49,15 +54,15 @@ h3 {
   -translate-y-2/4
 }
 
-.boxes {
-  &:hover > .box::after {
+.cards {
+  &:hover > .card::after {
     opacity: 1;
   }
 
-  .box {
+  .card {
     @apply
     bg-bDarkGray-5
-    text-gray-100
+    text-bLightGray-5
     min-w-full
     h-32
     min-h-full
@@ -79,12 +84,13 @@ h3 {
       top: 0;
       transition: opacity 500ms;
       width: 100%;
+      pointer-events: none
     }
 
     &::before {
       background: radial-gradient(
           800px circle at var(--mouse-x) var(--mouse-y),
-          rgba(255, 255, 255, 0.015),
+          rgba(255, 255, 255, 0.02),
           transparent 40%
       );
       z-index: 3;
@@ -93,13 +99,13 @@ h3 {
     &::after {
       background: radial-gradient(
           600px circle at var(--mouse-x) var(--mouse-y),
-          rgba(255, 255, 255, 0.2),
+          rgba(255, 255, 255, 0.15),
           transparent 40%
       );
       z-index: 1;
     }
 
-    .box-content {
+    .card-content {
       @apply
       bg-bDarkGray-3;
       border-radius: inherit;
