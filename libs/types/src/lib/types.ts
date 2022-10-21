@@ -31,3 +31,9 @@ export interface RequestWithUser extends Request {
 export interface TokenPayload {
   authId: string;
 }
+
+// METRICS
+export interface PriceUsd {
+  date: string;
+  value: string;
+}

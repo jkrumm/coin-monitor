@@ -22,4 +22,15 @@ export class MetricsService {
       .orderBy('time', 'DESC')
       .getOne();
   }
+
+  async fetchPriceUsd(): Promise<CoinMetricsRaw[]> {
+    return await this.coinMetricsRawRepo
+      .createQueryBuilder('coin_metrics_raw')
+      .select(['coin_metrics_raw.time', 'coin_metrics_raw.PriceUSD'])
+      .where('coin_metrics_raw.time > :start_at', {
+        start_at: '2011-01-01  10:41:30.746877',
+      })
+      .orderBy('time', 'DESC')
+      .getMany();
+  }
 }

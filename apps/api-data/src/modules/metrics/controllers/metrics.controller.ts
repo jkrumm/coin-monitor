@@ -10,4 +10,9 @@ export class MetricsController {
   async fetchRawCoinsMetrics(): Promise<CoinMetricsRaw> {
     return await this.metricsService.fetchRawCoinsMetrics();
   }
+
+  @Get('price-usd')
+  async fetchPriceUsd(): Promise<CoinMetricsRaw[]> {
+    return await this.metricsService.fetchPriceUsd();
+  }
 }

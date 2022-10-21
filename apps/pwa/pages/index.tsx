@@ -4,8 +4,11 @@ import { H1 } from '@blueprintjs/core';
 import useAuth from '@cm/pwa/state/useAuth';
 import CardItem, { CardItemTypes } from '@cm/pwa/components/cards/card-item';
 import Script from 'next/script';
+import { CoinMetricsRaw } from '@cm/api-data/modules/metrics/entities/coin-metrics-raw.entity';
+import { ParentSize } from '@visx/responsive';
+import BrushChart from '@cm/pwa/components/charts/chart';
 
-export function Index({ btc, coinMetricsRaw }) {
+export function Index({ btc, coinMetricsRaw, priceUsd }) {
   const { auth, loading, error } = useAuth();
   console.log(coinMetricsRaw);
   return (
@@ -93,6 +96,14 @@ export function Index({ btc, coinMetricsRaw }) {
             </Card>
           </div>
         </div>
+        <div className="mt-8 h-[800px] mb-20">
+          <H1>Chart</H1>
+          <ParentSize>
+            {({ width, height }) => (
+              <BrushChart stock={priceUsd} width={width} height={height} />
+            )}
+          </ParentSize>
+        </div>
       </div>
       <Script src="/script.js" />
     </div>
@@ -107,10 +118,17 @@ export async function getStaticProps() {
   );
   const btc = (await res.json()).bitcoin;
 
-  const resCoinMetricsRaw = await fetch(
-    'http://localhost:8000/api/metrics/raw-coinmetrics',
-  );
+  const resCoinMetricsRaw = await fetch('http://localhost:8000/metrics/raw-coinmetrics');
   const coinMetricsRaw = await resCoinMetricsRaw.json();
+
+  const resPriceUsd = await fetch('http://localhost:8000/metrics/price-usd');
+  let priceUsdRaw = (await resPriceUsd.json()) as CoinMetricsRaw[];
+  // console.log(priceUsdRaw);
+  // const priceUsd = [];
+  const priceUsd = priceUsdRaw.map((item) => ({
+    date: item.time,
+    close: parseFloat(item.PriceUSD),
+  }));
 
   // By returning { props: { posts } }, the Blog component
   // will receive `posts` as a prop at build time
@@ -118,6 +136,7 @@ export async function getStaticProps() {
     props: {
       btc,
       coinMetricsRaw,
+      priceUsd,
     },
   };
 }
