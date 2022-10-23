@@ -1,35 +1,61 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { scaleLog, scaleTime } from '@visx/scale';
 import { AppleStock } from '@visx/mock-data/lib/mocks/appleStock';
-import { Bounds } from '@visx/brush/lib/types';
-import BaseBrush, { BaseBrushState, UpdateBrush } from '@visx/brush/lib/BaseBrush';
-import { Group } from '@visx/group';
 import { LinearGradient } from '@visx/gradient';
-import { extent, max, min } from 'd3-array';
-import AreaChart from './area-chart';
-import { BrushHandleRenderProps } from '@visx/brush/lib/BrushHandle';
-import { appleStock } from '@visx/mock-data';
-import { PatternLines } from '@visx/pattern';
-import { Brush } from '@visx/brush';
+import { bisector, extent, max, min } from 'd3-array';
+import { defaultStyles, Tooltip, TooltipWithBounds, withTooltip } from '@visx/tooltip';
+import { timeFormat } from 'd3-time-format';
+import { localPoint } from '@visx/event';
+import { WithTooltipProvidedProps } from '@visx/tooltip/lib/enhancers/withTooltip';
+import { Bar, Line, LinePath } from '@visx/shape';
+import { curveMonotoneX } from '@visx/curve';
+import { AxisBottom, AxisLeft } from '@visx/axis';
+import { format } from 'd3-format';
+import { Group } from '@visx/group';
+import { GridColumns } from '@visx/grid';
 
 // Initialize some variables
-const stockOld = appleStock.slice(1000);
-const brushMargin = { top: 10, bottom: 15, left: 50, right: 20 };
-const chartSeparation = 30;
 const PATTERN_ID = 'brush_pattern';
 const GRADIENT_ID = 'brush_gradient';
-export const accentColor = '#5f6b7c';
 export const background = '#1c2127';
 export const background2 = '#252a31';
-const selectedBrushStyle = {
-  fill: `url(#${PATTERN_ID})`,
-  stroke: 'white',
+export const accentColor = '#edffea';
+export const accentColorDark = '#75daad';
+const tooltipStyles = {
+  ...defaultStyles,
+  background,
+  border: '1px solid white',
+  color: 'white',
 };
+
+// util
+const formatDate = timeFormat('%Y-%m-%d');
 
 // accessors
 const getDate = (d: AppleStock) => new Date(d.date);
 const getStockValue = (d: AppleStock) => d.close;
+const bisectDate = bisector<AppleStock, Date>((d) => new Date(d.date)).left;
 
+// FOR AREA CHART
+const axisColor = '#f6f7f9';
+const axisBottomTickLabelProps = {
+  textAnchor: 'middle' as const,
+  fontFamily: 'Arial',
+  fontSize: 14,
+  fill: axisColor,
+};
+const axisLeftTickLabelProps = {
+  dx: '-0.25em',
+  dy: '0.25em',
+  fontFamily: 'Arial',
+  fontSize: 14,
+  textAnchor: 'end' as const,
+  fill: axisColor,
+};
+
+const lineChartColor = '#184a90';
+
+type TooltipData = AppleStock;
 export type BrushProps = {
   width: number;
   height: number;
@@ -38,6 +64,13 @@ export type BrushProps = {
   compact?: boolean;
 };
 
+/*{
+    top: 20,
+    left: 60,
+    bottom: 40,
+    right: 20,
+  },*/
+
 function BrushChart({
   compact = false,
   width,
@@ -45,120 +78,84 @@ function BrushChart({
   stock,
   margin = {
     top: 20,
-    left: 50,
-    bottom: 20,
+    left: 60,
+    bottom: 40,
     right: 20,
   },
-}: BrushProps) {
-  const brushRef = useRef<BaseBrush | null>(null);
-  const [filteredStock, setFilteredStock] = useState(stock);
-
-  const onBrushChange = (domain: Bounds | null) => {
-    if (!domain) return;
-    const { x0, x1, y0, y1 } = domain;
-    const stockCopy = stock.filter((s) => {
-      const x = getDate(s).getTime();
-      const y = getStockValue(s);
-      return x > x0 && x < x1 && y > y0 && y < y1;
-    });
-    setFilteredStock(stockCopy);
-  };
-
+  showTooltip,
+  hideTooltip,
+  tooltipData,
+  tooltipTop = 0,
+  tooltipLeft = 0,
+}: BrushProps & WithTooltipProvidedProps<TooltipData>) {
+  if (compact) {
+    margin = {
+      top: 0,
+      left: 10,
+      bottom: 0,
+      right: 10,
+    };
+  }
+  // bounds
+  const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
-  const topChartBottomMargin = compact ? chartSeparation / 2 : chartSeparation + 10;
-  const topChartHeight = 0.8 * innerHeight - topChartBottomMargin;
-  const bottomChartHeight = innerHeight - topChartHeight - chartSeparation;
 
   // bounds
   const xMax = Math.max(width - margin.left - margin.right, 0);
-  const yMax = Math.max(topChartHeight, 0);
-  const yMin = Math.min(topChartHeight, 0);
-  const xBrushMax = Math.max(width - brushMargin.left - brushMargin.right, 0);
-  const yBrushMax = Math.max(bottomChartHeight - brushMargin.top - brushMargin.bottom, 0);
-  const yBrushMin = Math.min(bottomChartHeight - brushMargin.top - brushMargin.bottom, 0);
+  const yMax = Math.max(innerHeight, 0);
+  const yMin = Math.min(innerHeight, 0);
 
   // scales
   const dateScale = useMemo(
     () =>
       scaleTime<number>({
         range: [0, xMax],
-        domain: extent(filteredStock, getDate) as [Date, Date],
-      }),
-    [xMax, filteredStock],
-  );
-  const stockScale = useMemo(
-    () =>
-      scaleLog<number>({
-        range: [yMax, yMin],
-        domain: [min(filteredStock, getStockValue), max(filteredStock, getStockValue)],
-        nice: true,
-      }),
-    // scaleLinear<number>({
-    //   range: [yMax, 0],
-    //   domain: [0, max(filteredStock, getStockValue) || 0],
-    //   nice: true,
-    // }),
-    [yMax, filteredStock],
-  );
-  const brushDateScale = useMemo(
-    () =>
-      scaleTime<number>({
-        range: [0, xBrushMax],
+        // range: [margin.left, innerWidth + margin.left],
         domain: extent(stock, getDate) as [Date, Date],
       }),
-    [xBrushMax],
+    [innerWidth, margin.left],
   );
-  const brushStockScale = useMemo(
+
+  const stockScale = useMemo(
     () =>
+      /*scaleLinear({
+        range: [innerHeight + margin.top, margin.top],
+        domain: [0, (max(stock, getStockValue) || 0) + innerHeight / 3],
+        nice: true,
+      }),*/
       scaleLog<number>({
-        range: [yBrushMax, yBrushMin],
+        range: [yMax, yMin],
+        // range: [innerHeight + margin.top, margin.top],
         domain: [min(stock, getStockValue), max(stock, getStockValue)],
         nice: true,
       }),
-    // scaleLinear({
-    //   range: [yBrushMax, 0],
-    //   domain: [0, max(stock, getStockValue) || 0],
-    //   nice: true,
-    // }),
-    [yBrushMax],
+    [margin.top, innerHeight],
   );
 
-  const initialBrushPosition = useMemo(
-    () => ({
-      start: { x: brushDateScale(getDate(stock[50])) },
-      end: { x: brushDateScale(getDate(stock[100])) },
-    }),
-    [brushDateScale],
+  // tooltip handler
+  const handleTooltip = useCallback(
+    (event: React.TouchEvent<SVGRectElement> | React.MouseEvent<SVGRectElement>) => {
+      let { x } = localPoint(event) || { x: 0 };
+      x = x - margin.left;
+      const x0 = dateScale.invert(x);
+      const index = bisectDate(stock, x0, 1);
+      const d0 = stock[index - 1];
+      const d1 = stock[index];
+      let d = d0;
+      if (d1 && getDate(d1)) {
+        d =
+          x0.valueOf() - getDate(d0).valueOf() > getDate(d1).valueOf() - x0.valueOf()
+            ? d1
+            : d0;
+      }
+      showTooltip({
+        tooltipData: d,
+        tooltipLeft: x,
+        tooltipTop: stockScale(getStockValue(d)),
+      });
+    },
+    [showTooltip, stockScale, dateScale],
   );
-
-  // event handlers
-  const handleClearClick = () => {
-    if (brushRef?.current) {
-      setFilteredStock(stock);
-      brushRef.current.reset();
-    }
-  };
-
-  const handleResetClick = () => {
-    if (brushRef?.current) {
-      const updater: UpdateBrush = (prevBrush) => {
-        const newExtent = brushRef.current!.getExtent(
-          initialBrushPosition.start,
-          initialBrushPosition.end,
-        );
-
-        const newState: BaseBrushState = {
-          ...prevBrush,
-          start: { y: newExtent.y0, x: newExtent.x0 },
-          end: { y: newExtent.y1, x: newExtent.x1 },
-          extent: newExtent,
-        };
-
-        return newState;
-      };
-      brushRef.current.updateBrush(updater);
-    }
-  };
 
   return (
     <div>
@@ -172,78 +169,156 @@ function BrushChart({
           fill={`url(#${GRADIENT_ID})`}
           rx={14}
         />
-        <AreaChart
+        <Group left={margin.left} top={margin.top}>
+          {/*<LinearGradient*/}
+          {/*  id="gradient"*/}
+          {/*  from={lineChartColor}*/}
+          {/*  fromOpacity={1}*/}
+          {/*  to={gradientColor}*/}
+          {/*  toOpacity={0.8}*/}
+          {/*/>
+          <GridRows
+            left={margin.left}
+            scale={stockScale}
+            width={innerWidth}
+            strokeDasharray="1,3"
+            stroke={accentColor}
+            strokeOpacity={0}
+            pointerEvents="none"
+          />*/}
+          <GridColumns
+            top={margin.top}
+            scale={dateScale}
+            height={innerHeight}
+            stroke={accentColor}
+            strokeOpacity={0.05}
+            pointerEvents="none"
+          />
+          {/*<AreaClosed<AppleStock>
+            data={stock}
+            x={(d) => dateScale(getDate(d)) ?? 0}
+            y={(d) => stockScale(getStockValue(d)) ?? 0}
+            yScale={stockScale}
+            strokeWidth={1}
+            stroke={lineChartColor}
+            fill={lineChartColor}
+            curve={curveMonotoneX}
+          />*/}
+          <LinePath<AppleStock>
+            data={stock}
+            x={(d) => dateScale(getDate(d)) || 0}
+            y={(d) => stockScale(getStockValue(d)) || 0}
+            // yScale={yScale}
+            strokeWidth={2}
+            stroke={lineChartColor}
+            // fill="url(#gradient)"
+            curve={curveMonotoneX}
+          />
+          {!compact && (
+            <AxisBottom
+              top={yMax}
+              scale={dateScale}
+              numTicks={width > 520 ? 10 : 5}
+              stroke={axisColor}
+              tickStroke={axisColor}
+              tickLabelProps={() => axisBottomTickLabelProps}
+            />
+          )}
+          {!compact && (
+            <AxisLeft
+              scale={stockScale}
+              numTicks={6}
+              stroke={axisColor}
+              tickStroke={axisColor}
+              tickLabelProps={() => axisLeftTickLabelProps}
+              tickFormat={format('~s')}
+              // tickValues={}
+            />
+          )}
+          {/*children*/}
+          <Bar
+            x={margin.left}
+            y={margin.top}
+            width={innerWidth}
+            height={innerHeight}
+            fill="transparent"
+            rx={14}
+            onTouchStart={handleTooltip}
+            onTouchMove={handleTooltip}
+            onMouseMove={handleTooltip}
+            onMouseLeave={() => hideTooltip()}
+          />
+          {/*<AreaChart
           hideBottomAxis={compact}
-          data={filteredStock}
+          hideLeftAxis={compact}
+          data={stock}
           width={width}
-          margin={{ ...margin, bottom: topChartBottomMargin }}
+          margin={{ ...margin }}
           yMax={yMax}
           xScale={dateScale}
           yScale={stockScale}
           gradientColor={background2}
-        />
-        <AreaChart
-          hideBottomAxis
-          hideLeftAxis
-          data={stock}
-          width={width}
-          yMax={yBrushMax}
-          xScale={brushDateScale}
-          yScale={brushStockScale}
-          margin={brushMargin}
-          top={topChartHeight + topChartBottomMargin + margin.top}
-          gradientColor={background2}
-        >
-          <PatternLines
-            id={PATTERN_ID}
-            height={8}
-            width={8}
-            stroke={accentColor}
-            strokeWidth={0.3}
-            orientation={['diagonal']}
-          />
-          <Brush
-            xScale={brushDateScale}
-            yScale={brushStockScale}
-            width={xBrushMax}
-            height={yBrushMax}
-            margin={brushMargin}
-            handleSize={8}
-            innerRef={brushRef}
-            resizeTriggerAreas={['left', 'right']}
-            brushDirection="horizontal"
-            initialBrushPosition={initialBrushPosition}
-            onChange={onBrushChange}
-            onClick={() => setFilteredStock(stock)}
-            selectedBoxStyle={selectedBrushStyle}
-            useWindowMoveEvents
-            renderBrushHandle={(props) => <BrushHandle {...props} />}
-          />
-        </AreaChart>
+        />*/}
+          {tooltipData && (
+            <g>
+              <Line
+                from={{ x: tooltipLeft, y: margin.top }}
+                to={{ x: tooltipLeft, y: innerHeight + margin.top }}
+                stroke={accentColorDark}
+                strokeWidth={2}
+                pointerEvents="none"
+                strokeDasharray="5,2"
+              />
+              <circle
+                cx={tooltipLeft}
+                cy={tooltipTop + 1}
+                r={4}
+                fill="black"
+                fillOpacity={0.1}
+                stroke="black"
+                strokeOpacity={0.1}
+                strokeWidth={2}
+                pointerEvents="none"
+              />
+              <circle
+                cx={tooltipLeft}
+                cy={tooltipTop}
+                r={4}
+                fill={accentColorDark}
+                stroke="white"
+                strokeWidth={2}
+                pointerEvents="none"
+              />
+            </g>
+          )}
+        </Group>
       </svg>
-      <button onClick={handleClearClick}>Clear</button>&nbsp;
-      <button onClick={handleResetClick}>Reset</button>
+      {tooltipData && (
+        <div>
+          <TooltipWithBounds
+            key={Math.random()}
+            top={tooltipTop - 12 + margin.bottom}
+            left={tooltipLeft + margin.left + 12}
+            style={tooltipStyles}
+          >
+            {`$${getStockValue(tooltipData)}`}
+          </TooltipWithBounds>
+          <Tooltip
+            top={innerHeight + margin.top - 14}
+            left={tooltipLeft + margin.left - 8}
+            style={{
+              ...defaultStyles,
+              minWidth: 72,
+              textAlign: 'center',
+              transform: 'translateX(-50%)',
+            }}
+          >
+            {formatDate(getDate(tooltipData))}
+          </Tooltip>
+        </div>
+      )}
     </div>
   );
 }
-// We need to manually offset the handles for them to be rendered at the right position
-const BrushHandle = ({ x, height, isBrushActive }: BrushHandleRenderProps) => {
-  const pathWidth = 8;
-  const pathHeight = 15;
-  if (!isBrushActive) {
-    return null;
-  }
-  return (
-    <Group left={x + pathWidth / 2} top={(height - pathHeight) / 2}>
-      <path
-        fill="#f2f2f2"
-        d="M -4.5 0.5 L 3.5 0.5 L 3.5 15.5 L -4.5 15.5 L -4.5 0.5 M -1.5 4 L -1.5 12 M 0.5 4 L 0.5 12"
-        stroke="#999999"
-        strokeWidth="1"
-        style={{ cursor: 'ew-resize' }}
-      />
-    </Group>
-  );
-};
 
-export default BrushChart;
+export default withTooltip<BrushProps, TooltipData>(BrushChart);

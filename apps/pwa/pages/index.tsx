@@ -7,6 +7,7 @@ import Script from 'next/script';
 import { CoinMetricsRaw } from '@cm/api-data/modules/metrics/entities/coin-metrics-raw.entity';
 import { ParentSize } from '@visx/responsive';
 import BrushChart from '@cm/pwa/components/charts/chart';
+import TestChart from '@cm/pwa/components/charts/test-chart';
 
 export function Index({ btc, coinMetricsRaw, priceUsd }) {
   const { auth, loading, error } = useAuth();
@@ -101,6 +102,15 @@ export function Index({ btc, coinMetricsRaw, priceUsd }) {
           <ParentSize>
             {({ width, height }) => (
               <BrushChart stock={priceUsd} width={width} height={height} />
+              /*<TestChart stocks={priceUsd} width={width} height={height} />*/
+            )}
+          </ParentSize>
+        </div>
+        <div className="mt-8 h-[800px] mb-20">
+          <H1>Chart</H1>
+          <ParentSize>
+            {({ width, height }) => (
+              <TestChart stocks={priceUsd} width={width} height={height} />
             )}
           </ParentSize>
         </div>
@@ -125,10 +135,12 @@ export async function getStaticProps() {
   let priceUsdRaw = (await resPriceUsd.json()) as CoinMetricsRaw[];
   // console.log(priceUsdRaw);
   // const priceUsd = [];
-  const priceUsd = priceUsdRaw.map((item) => ({
-    date: item.time,
-    close: parseFloat(item.PriceUSD),
-  }));
+  const priceUsd = priceUsdRaw
+    .map((item) => ({
+      date: item.time,
+      close: Math.round(parseFloat(item.PriceUSD) * 100) / 100,
+    }))
+    .reverse();
 
   // By returning { props: { posts } }, the Blog component
   // will receive `posts` as a prop at build time

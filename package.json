@@ -24,6 +24,7 @@
     "@visx/brush": "^2.12.2",
     "@visx/curve": "^2.1.0",
     "@visx/gradient": "^2.10.0",
+    "@visx/grid": "^2.12.2",
     "@visx/group": "^2.10.0",
     "@visx/mock-data": "^2.15.1",
     "@visx/pattern": "^2.10.0",
