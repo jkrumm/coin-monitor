@@ -13,6 +13,18 @@ import { AxisBottom, AxisLeft } from '@visx/axis';
 import { format } from 'd3-format';
 import { Group } from '@visx/group';
 import { GridColumns } from '@visx/grid';
+import { GlyphTriangle } from '@visx/glyph';
+
+const glyphs = [
+  {
+    date: '2018-12-13T00:00:00.000Z',
+    type: 'buy',
+  },
+  {
+    date: '2017-12-17T00:00:00.000Z',
+    type: 'sell',
+  },
+];
 
 // Initialize some variables
 const PATTERN_ID = 'brush_pattern';
@@ -131,6 +143,16 @@ function BrushChart({
       }),
     [margin.top, innerHeight],
   );
+
+  console.log(stock[3000]);
+
+  // accessors
+  const date = (d: AppleStock) => d.date.valueOf();
+  const value = (d: AppleStock) => d.close;
+
+  // positions
+  const getX = (d: AppleStock) => dateScale(new Date(d.date)) ?? 0;
+  const getY = (d: AppleStock) => stockScale(d.close) ?? 0;
 
   // tooltip handler
   const handleTooltip = useCallback(
@@ -291,31 +313,49 @@ function BrushChart({
               />
             </g>
           )}
+          {stock.map((item, index) => {
+            for (const glyph of glyphs) {
+              if (item.date === glyph.date) {
+                return (
+                  <g key={`line-glyph-${index}`}>
+                    <GlyphTriangle
+                      fill={glyph.type === 'buy' ? 'green' : 'red'}
+                      left={getX(item)}
+                      top={getY(item) + (glyph.type === 'buy' ? 15 : -15)}
+                      className={glyph.type === 'sell' && 'rotate-180'}
+                    />
+                  </g>
+                );
+              }
+            }
+          })}
         </Group>
       </svg>
       {tooltipData && (
-        <div>
-          <TooltipWithBounds
-            key={Math.random()}
-            top={tooltipTop - 12 + margin.bottom}
-            left={tooltipLeft + margin.left + 12}
-            style={tooltipStyles}
-          >
-            {`$${getStockValue(tooltipData)}`}
-          </TooltipWithBounds>
-          <Tooltip
-            top={innerHeight + margin.top - 14}
-            left={tooltipLeft + margin.left - 8}
-            style={{
-              ...defaultStyles,
-              minWidth: 72,
-              textAlign: 'center',
-              transform: 'translateX(-50%)',
-            }}
-          >
-            {formatDate(getDate(tooltipData))}
-          </Tooltip>
-        </div>
+        <Group left={margin.left} top={margin.top}>
+          <div>
+            <TooltipWithBounds
+              key={Math.random()}
+              top={tooltipTop - 12 + margin.bottom}
+              left={tooltipLeft + margin.left + 12}
+              style={tooltipStyles}
+            >
+              {`$${getStockValue(tooltipData)}`}
+            </TooltipWithBounds>
+            <Tooltip
+              top={innerHeight + margin.top - 14}
+              left={tooltipLeft + margin.left - 8}
+              style={{
+                ...defaultStyles,
+                minWidth: 72,
+                textAlign: 'center',
+                transform: 'translateX(-50%)',
+              }}
+            >
+              {formatDate(getDate(tooltipData))}
+            </Tooltip>
+          </div>
+        </Group>
       )}
     </div>
   );
