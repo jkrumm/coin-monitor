@@ -6,8 +6,18 @@ import CardItem, { CardItemTypes } from '@cm/pwa/components/cards/card-item';
 import Script from 'next/script';
 import { CoinMetricsRaw } from '@cm/api-data/modules/metrics/entities/coin-metrics-raw.entity';
 import { ParentSize } from '@visx/responsive';
-import BrushChart from '@cm/pwa/components/charts/chart';
-import TestChart from '@cm/pwa/components/charts/test-chart';
+import BrushChart from '@cm/pwa/components/charts/boilerplate-chart';
+
+const glyphs = [
+  {
+    date: '2018-12-13T00:00:00.000Z',
+    type: 'buy',
+  },
+  {
+    date: '2017-12-17T00:00:00.000Z',
+    type: 'sell',
+  },
+];
 
 export function Index({ btc, coinMetricsRaw, priceUsd }) {
   const { auth, loading, error } = useAuth();
@@ -101,16 +111,13 @@ export function Index({ btc, coinMetricsRaw, priceUsd }) {
           <H1>Chart</H1>
           <ParentSize>
             {({ width, height }) => (
-              <BrushChart stock={priceUsd} width={width} height={height} />
+              <BrushChart
+                stock={priceUsd}
+                glyphs={glyphs}
+                width={width}
+                height={height}
+              />
               /*<TestChart stocks={priceUsd} width={width} height={height} />*/
-            )}
-          </ParentSize>
-        </div>
-        <div className="mt-8 h-[800px] mb-20">
-          <H1>Chart</H1>
-          <ParentSize>
-            {({ width, height }) => (
-              <TestChart stocks={priceUsd} width={width} height={height} />
             )}
           </ParentSize>
         </div>

@@ -1,71 +1,43 @@
 import React, { useCallback, useMemo } from 'react';
 import { scaleLog, scaleTime } from '@visx/scale';
 import { AppleStock } from '@visx/mock-data/lib/mocks/appleStock';
-import { LinearGradient } from '@visx/gradient';
 import { bisector, extent, max, min } from 'd3-array';
 import { defaultStyles, Tooltip, TooltipWithBounds, withTooltip } from '@visx/tooltip';
-import { timeFormat } from 'd3-time-format';
 import { localPoint } from '@visx/event';
 import { WithTooltipProvidedProps } from '@visx/tooltip/lib/enhancers/withTooltip';
 import { Bar, Line, LinePath } from '@visx/shape';
-import { curveMonotoneX } from '@visx/curve';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { format } from 'd3-format';
 import { Group } from '@visx/group';
-import { GridColumns } from '@visx/grid';
+import { GridColumns, GridRows } from '@visx/grid';
 import { GlyphTriangle } from '@visx/glyph';
-
-const glyphs = [
-  {
-    date: '2018-12-13T00:00:00.000Z',
-    type: 'buy',
-  },
-  {
-    date: '2017-12-17T00:00:00.000Z',
-    type: 'sell',
-  },
-];
-
-// Initialize some variables
-const PATTERN_ID = 'brush_pattern';
-const GRADIENT_ID = 'brush_gradient';
-export const background = '#1c2127';
-export const background2 = '#252a31';
-export const accentColor = '#edffea';
-export const accentColorDark = '#75daad';
-const tooltipStyles = {
-  ...defaultStyles,
+import {
+  accentColor,
+  accentColorTooltip,
+  axisBottomTickLabelProps,
+  axisColor,
+  axisLeftTickLabelProps,
   background,
-  border: '1px solid white',
-  color: 'white',
-};
+  btcColor,
+  formatDate,
+  tooltipStyles,
+} from '@cm/pwa/components/charts/charts.constants';
+import { curveMonotoneX } from '@visx/curve';
+import { DateTime } from 'luxon';
 
-// util
-const formatDate = timeFormat('%Y-%m-%d');
+export function toDateTime(date: string | Date): DateTime {
+  if (date instanceof Date) {
+    return DateTime.fromJSDate(date);
+  }
+  // in case we have invalid date, DateTime will softfail by returning a valid
+  // Object with invalid data (which results in formmating functions to return null)
+  return DateTime.fromISO(date);
+}
 
 // accessors
 const getDate = (d: AppleStock) => new Date(d.date);
 const getStockValue = (d: AppleStock) => d.close;
 const bisectDate = bisector<AppleStock, Date>((d) => new Date(d.date)).left;
-
-// FOR AREA CHART
-const axisColor = '#f6f7f9';
-const axisBottomTickLabelProps = {
-  textAnchor: 'middle' as const,
-  fontFamily: 'Arial',
-  fontSize: 14,
-  fill: axisColor,
-};
-const axisLeftTickLabelProps = {
-  dx: '-0.25em',
-  dy: '0.25em',
-  fontFamily: 'Arial',
-  fontSize: 14,
-  textAnchor: 'end' as const,
-  fill: axisColor,
-};
-
-const lineChartColor = '#184a90';
 
 type TooltipData = AppleStock;
 export type BrushProps = {
@@ -73,21 +45,20 @@ export type BrushProps = {
   height: number;
   margin?: { top: number; right: number; bottom: number; left: number };
   stock: { date: string; close: number }[];
+  glyphs?: { date: string; type: string }[];
+  showGrid?: boolean;
+  useTooltip?: boolean;
   compact?: boolean;
 };
 
-/*{
-    top: 20,
-    left: 60,
-    bottom: 40,
-    right: 20,
-  },*/
-
-function BrushChart({
+function BoilerplateChart({
   compact = false,
   width,
   height,
   stock,
+  glyphs,
+  showGrid = true,
+  useTooltip = true,
   margin = {
     top: 20,
     left: 60,
@@ -122,7 +93,6 @@ function BrushChart({
     () =>
       scaleTime<number>({
         range: [0, xMax],
-        // range: [margin.left, innerWidth + margin.left],
         domain: extent(stock, getDate) as [Date, Date],
       }),
     [innerWidth, margin.left],
@@ -137,18 +107,11 @@ function BrushChart({
       }),*/
       scaleLog<number>({
         range: [yMax, yMin],
-        // range: [innerHeight + margin.top, margin.top],
         domain: [min(stock, getStockValue), max(stock, getStockValue)],
         nice: true,
       }),
     [margin.top, innerHeight],
   );
-
-  console.log(stock[3000]);
-
-  // accessors
-  const date = (d: AppleStock) => d.date.valueOf();
-  const value = (d: AppleStock) => d.close;
 
   // positions
   const getX = (d: AppleStock) => dateScale(new Date(d.date)) ?? 0;
@@ -182,58 +145,41 @@ function BrushChart({
   return (
     <div>
       <svg width={width} height={height}>
-        <LinearGradient id={GRADIENT_ID} from={background} to={background2} rotate={45} />
-        <rect
-          x={0}
-          y={0}
-          width={width}
-          height={height}
-          fill={`url(#${GRADIENT_ID})`}
-          rx={14}
-        />
+        <rect x={0} y={0} width={width} height={height} fill={background} rx={14} />
         <Group left={margin.left} top={margin.top}>
-          {/*<LinearGradient*/}
-          {/*  id="gradient"*/}
-          {/*  from={lineChartColor}*/}
-          {/*  fromOpacity={1}*/}
-          {/*  to={gradientColor}*/}
-          {/*  toOpacity={0.8}*/}
-          {/*/>
-          <GridRows
-            left={margin.left}
-            scale={stockScale}
-            width={innerWidth}
-            strokeDasharray="1,3"
-            stroke={accentColor}
-            strokeOpacity={0}
-            pointerEvents="none"
-          />*/}
-          <GridColumns
-            top={margin.top}
-            scale={dateScale}
-            height={innerHeight}
-            stroke={accentColor}
-            strokeOpacity={0.05}
-            pointerEvents="none"
-          />
-          {/*<AreaClosed<AppleStock>
-            data={stock}
-            x={(d) => dateScale(getDate(d)) ?? 0}
-            y={(d) => stockScale(getStockValue(d)) ?? 0}
-            yScale={stockScale}
-            strokeWidth={1}
-            stroke={lineChartColor}
-            fill={lineChartColor}
-            curve={curveMonotoneX}
-          />*/}
+          {showGrid && (
+            <GridRows
+              scale={stockScale}
+              numTicks={6}
+              width={innerWidth}
+              stroke={accentColor}
+              strokeOpacity={0.05}
+              pointerEvents="none"
+            />
+          )}
+          {showGrid && (
+            <GridColumns
+              scale={dateScale}
+              height={innerHeight}
+              stroke={accentColor}
+              strokeOpacity={0.05}
+              pointerEvents="none"
+            />
+          )}
           <LinePath<AppleStock>
-            data={stock}
+            data={stock.slice(0, -500)}
             x={(d) => dateScale(getDate(d)) || 0}
             y={(d) => stockScale(getStockValue(d)) || 0}
-            // yScale={yScale}
             strokeWidth={2}
-            stroke={lineChartColor}
-            // fill="url(#gradient)"
+            stroke={btcColor}
+            curve={curveMonotoneX}
+          />
+          <LinePath<AppleStock>
+            data={stock.slice(-499)}
+            x={(d) => dateScale(getDate(d)) || 0}
+            y={(d) => stockScale(getStockValue(d)) || 0}
+            strokeWidth={2}
+            stroke={'red'}
             curve={curveMonotoneX}
           />
           {!compact && (
@@ -254,39 +200,26 @@ function BrushChart({
               tickStroke={axisColor}
               tickLabelProps={() => axisLeftTickLabelProps}
               tickFormat={format('~s')}
-              // tickValues={}
             />
           )}
-          {/*children*/}
-          <Bar
-            x={margin.left}
-            y={margin.top}
-            width={innerWidth}
-            height={innerHeight}
-            fill="transparent"
-            rx={14}
-            onTouchStart={handleTooltip}
-            onTouchMove={handleTooltip}
-            onMouseMove={handleTooltip}
-            onMouseLeave={() => hideTooltip()}
-          />
-          {/*<AreaChart
-          hideBottomAxis={compact}
-          hideLeftAxis={compact}
-          data={stock}
-          width={width}
-          margin={{ ...margin }}
-          yMax={yMax}
-          xScale={dateScale}
-          yScale={stockScale}
-          gradientColor={background2}
-        />*/}
-          {tooltipData && (
+          {useTooltip && (
+            <Bar
+              width={innerWidth}
+              height={innerHeight}
+              fill="transparent"
+              rx={14}
+              onTouchStart={handleTooltip}
+              onTouchMove={handleTooltip}
+              onMouseMove={handleTooltip}
+              onMouseLeave={() => hideTooltip()}
+            />
+          )}
+          {useTooltip && tooltipData && (
             <g>
               <Line
-                from={{ x: tooltipLeft, y: margin.top }}
-                to={{ x: tooltipLeft, y: innerHeight + margin.top }}
-                stroke={accentColorDark}
+                from={{ x: tooltipLeft, y: 0 }}
+                to={{ x: tooltipLeft, y: innerHeight }}
+                stroke={accentColorTooltip}
                 strokeWidth={2}
                 pointerEvents="none"
                 strokeDasharray="5,2"
@@ -306,32 +239,33 @@ function BrushChart({
                 cx={tooltipLeft}
                 cy={tooltipTop}
                 r={4}
-                fill={accentColorDark}
+                fill={accentColorTooltip}
                 stroke="white"
                 strokeWidth={2}
                 pointerEvents="none"
               />
             </g>
           )}
-          {stock.map((item, index) => {
-            for (const glyph of glyphs) {
-              if (item.date === glyph.date) {
-                return (
-                  <g key={`line-glyph-${index}`}>
-                    <GlyphTriangle
-                      fill={glyph.type === 'buy' ? 'green' : 'red'}
-                      left={getX(item)}
-                      top={getY(item) + (glyph.type === 'buy' ? 15 : -15)}
-                      className={glyph.type === 'sell' && 'rotate-180'}
-                    />
-                  </g>
-                );
+          {glyphs &&
+            stock.map((item, index) => {
+              for (const glyph of glyphs) {
+                if (item.date === glyph.date) {
+                  return (
+                    <g key={`line-glyph-${index}`}>
+                      <GlyphTriangle
+                        fill={glyph.type === 'buy' ? '#238551' : '#cd4246'}
+                        left={getX(item)}
+                        top={getY(item) + (glyph.type === 'buy' ? 15 : -15)}
+                        className={glyph.type === 'sell' ? 'rotate-180' : ''}
+                      />
+                    </g>
+                  );
+                }
               }
-            }
-          })}
+            })}
         </Group>
       </svg>
-      {tooltipData && (
+      {useTooltip && tooltipData && (
         <Group left={margin.left} top={margin.top}>
           <div>
             <TooltipWithBounds
@@ -343,8 +277,8 @@ function BrushChart({
               {`$${getStockValue(tooltipData)}`}
             </TooltipWithBounds>
             <Tooltip
-              top={innerHeight + margin.top - 14}
-              left={tooltipLeft + margin.left - 8}
+              top={innerHeight + margin.top - 10}
+              left={tooltipLeft + margin.left - 10}
               style={{
                 ...defaultStyles,
                 minWidth: 72,
@@ -361,4 +295,4 @@ function BrushChart({
   );
 }
 
-export default withTooltip<BrushProps, TooltipData>(BrushChart);
+export default withTooltip<BrushProps, TooltipData>(BoilerplateChart);
