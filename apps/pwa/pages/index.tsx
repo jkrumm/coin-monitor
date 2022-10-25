@@ -4,24 +4,20 @@ import { H1 } from '@blueprintjs/core';
 import useAuth from '@cm/pwa/state/useAuth';
 import CardItem, { CardItemTypes } from '@cm/pwa/components/cards/card-item';
 import Script from 'next/script';
-import { CoinMetricsRaw } from '@cm/api-data/modules/metrics/entities/coin-metrics-raw.entity';
 import { ParentSize } from '@visx/responsive';
-import BrushChart from '@cm/pwa/components/charts/boilerplate-chart';
+import BoilerplateChart from '@cm/pwa/components/charts/boilerplate-chart';
+import { BaseMetric } from '@cm/types';
 
-const glyphs = [
-  {
-    date: '2018-12-13T00:00:00.000Z',
-    type: 'buy',
-  },
-  {
-    date: '2017-12-17T00:00:00.000Z',
-    type: 'sell',
-  },
-];
-
-export function Index({ btc, coinMetricsRaw, priceUsd }) {
+export function Index({
+  btc,
+  coinMetricsRaw,
+  priceUsd,
+}: {
+  btc: any;
+  coinMetricsRaw: any;
+  priceUsd: BaseMetric;
+}) {
   const { auth, loading, error } = useAuth();
-  console.log(coinMetricsRaw);
   return (
     <div className={styles.page}>
       <div id="welcome">
@@ -111,13 +107,12 @@ export function Index({ btc, coinMetricsRaw, priceUsd }) {
           <H1>Chart</H1>
           <ParentSize>
             {({ width, height }) => (
-              <BrushChart
-                stock={priceUsd}
-                glyphs={glyphs}
+              <BoilerplateChart
+                stock={priceUsd.btc}
+                events={priceUsd.events}
                 width={width}
                 height={height}
               />
-              /*<TestChart stocks={priceUsd} width={width} height={height} />*/
             )}
           </ParentSize>
         </div>
@@ -139,18 +134,8 @@ export async function getStaticProps() {
   const coinMetricsRaw = await resCoinMetricsRaw.json();
 
   const resPriceUsd = await fetch('http://localhost:8000/metrics/price-usd');
-  let priceUsdRaw = (await resPriceUsd.json()) as CoinMetricsRaw[];
-  // console.log(priceUsdRaw);
-  // const priceUsd = [];
-  const priceUsd = priceUsdRaw
-    .map((item) => ({
-      date: item.time,
-      close: Math.round(parseFloat(item.PriceUSD) * 100) / 100,
-    }))
-    .reverse();
+  let priceUsd = (await resPriceUsd.json()) as BaseMetric;
 
-  // By returning { props: { posts } }, the Blog component
-  // will receive `posts` as a prop at build time
   return {
     props: {
       btc,

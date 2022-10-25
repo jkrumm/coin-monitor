@@ -37,3 +37,8 @@ export interface PriceUsd {
   date: string;
   value: string;
 }
+
+export interface BaseMetric {
+  btc: { date: string; close: number }[];
+  events: { date: string; close: number; index: number; type: 'buy' | 'sell' }[];
+}

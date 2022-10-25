@@ -4,7 +4,7 @@ import { defaultStyles } from '@visx/tooltip';
 // styling
 export const background = '#1c2127';
 export const accentColor = '#edffea';
-export const accentColorTooltip = '#75daad';
+export const accentColorTooltip = '#184a90';
 export const tooltipStyles = {
   ...defaultStyles,
   background,
@@ -26,7 +26,8 @@ export const axisLeftTickLabelProps = {
   textAnchor: 'end' as const,
   fill: axisColor,
 };
-export const btcColor = '#184a90';
+export const buyColor = '#238551';
+export const sellColor = '#cd4246';
 
 // util
 export const formatDate = timeFormat('%Y-%m-%d');

@@ -18,12 +18,14 @@ import {
   axisColor,
   axisLeftTickLabelProps,
   background,
-  btcColor,
+  buyColor,
   formatDate,
+  sellColor,
   tooltipStyles,
 } from '@cm/pwa/components/charts/charts.constants';
 import { curveMonotoneX } from '@visx/curve';
 import { DateTime } from 'luxon';
+import crypto from 'crypto';
 
 export function toDateTime(date: string | Date): DateTime {
   if (date instanceof Date) {
@@ -45,7 +47,7 @@ export type BrushProps = {
   height: number;
   margin?: { top: number; right: number; bottom: number; left: number };
   stock: { date: string; close: number }[];
-  glyphs?: { date: string; type: string }[];
+  events: { date: string; close: number; index: number; type: 'buy' | 'sell' }[];
   showGrid?: boolean;
   useTooltip?: boolean;
   compact?: boolean;
@@ -56,7 +58,7 @@ function BoilerplateChart({
   width,
   height,
   stock,
-  glyphs,
+  events,
   showGrid = true,
   useTooltip = true,
   margin = {
@@ -167,19 +169,32 @@ function BoilerplateChart({
             />
           )}
           <LinePath<AppleStock>
-            data={stock.slice(0, -500)}
+            data={stock.slice(0, events[0].index + 1)}
             x={(d) => dateScale(getDate(d)) || 0}
             y={(d) => stockScale(getStockValue(d)) || 0}
-            strokeWidth={2}
-            stroke={btcColor}
+            strokeWidth={1}
+            stroke={buyColor}
             curve={curveMonotoneX}
           />
+          {events.map((event, index) => {
+            if (index === 0) return;
+            return (
+              <LinePath<AppleStock>
+                data={stock.slice(events[index - 1].index, event.index + 1)}
+                x={(d) => dateScale(getDate(d)) || 0}
+                y={(d) => stockScale(getStockValue(d)) || 0}
+                strokeWidth={1}
+                stroke={event.type === 'buy' ? sellColor : buyColor}
+                curve={curveMonotoneX}
+              />
+            );
+          })}
           <LinePath<AppleStock>
-            data={stock.slice(-499)}
+            data={stock.slice(-(stock.length - events.slice(-1)[0].index))}
             x={(d) => dateScale(getDate(d)) || 0}
             y={(d) => stockScale(getStockValue(d)) || 0}
-            strokeWidth={2}
-            stroke={'red'}
+            strokeWidth={1}
+            stroke={events.slice(-1)[0].type === 'buy' ? buyColor : sellColor}
             curve={curveMonotoneX}
           />
           {!compact && (
@@ -246,17 +261,17 @@ function BoilerplateChart({
               />
             </g>
           )}
-          {glyphs &&
+          {events &&
             stock.map((item, index) => {
-              for (const glyph of glyphs) {
-                if (item.date === glyph.date) {
+              for (const event of events) {
+                if (item.date === event.date) {
                   return (
                     <g key={`line-glyph-${index}`}>
                       <GlyphTriangle
-                        fill={glyph.type === 'buy' ? '#238551' : '#cd4246'}
+                        fill={event.type === 'buy' ? buyColor : sellColor}
                         left={getX(item)}
-                        top={getY(item) + (glyph.type === 'buy' ? 15 : -15)}
-                        className={glyph.type === 'sell' ? 'rotate-180' : ''}
+                        top={getY(item) + (event.type === 'buy' ? 15 : -15)}
+                        className={event.type === 'sell' ? 'rotate-180' : ''}
                       />
                     </g>
                   );
@@ -269,7 +284,7 @@ function BoilerplateChart({
         <Group left={margin.left} top={margin.top}>
           <div>
             <TooltipWithBounds
-              key={Math.random()}
+              key={crypto.randomBytes(6).toString()}
               top={tooltipTop - 12 + margin.bottom}
               left={tooltipLeft + margin.left + 12}
               style={tooltipStyles}
