@@ -31,8 +31,6 @@ export function toDateTime(date: string | Date): DateTime {
   if (date instanceof Date) {
     return DateTime.fromJSDate(date);
   }
-  // in case we have invalid date, DateTime will softfail by returning a valid
-  // Object with invalid data (which results in formmating functions to return null)
   return DateTime.fromISO(date);
 }
 
@@ -46,20 +44,22 @@ export type BrushProps = {
   width: number;
   height: number;
   margin?: { top: number; right: number; bottom: number; left: number };
-  stock: { date: string; close: number }[];
+  btc: { date: string; close: number }[];
   events: { date: string; close: number; index: number; type: 'buy' | 'sell' }[];
-  showGrid?: boolean;
+  useGrid?: boolean;
+  useGlyphs?: boolean;
   useTooltip?: boolean;
-  compact?: boolean;
+  useCompact?: boolean;
 };
 
-function BoilerplateChart({
-  compact = false,
+function Chart({
+  useCompact = false,
+  useGlyphs = true,
   width,
   height,
-  stock,
+  btc,
   events,
-  showGrid = true,
+  useGrid = true,
   useTooltip = true,
   margin = {
     top: 20,
@@ -73,12 +73,12 @@ function BoilerplateChart({
   tooltipTop = 0,
   tooltipLeft = 0,
 }: BrushProps & WithTooltipProvidedProps<TooltipData>) {
-  if (compact) {
+  if (useCompact) {
     margin = {
       top: 0,
-      left: 10,
-      bottom: 0,
-      right: 10,
+      left: 0,
+      bottom: -40,
+      right: 0,
     };
   }
   // bounds
@@ -95,7 +95,7 @@ function BoilerplateChart({
     () =>
       scaleTime<number>({
         range: [0, xMax],
-        domain: extent(stock, getDate) as [Date, Date],
+        domain: extent(btc, getDate) as [Date, Date],
       }),
     [innerWidth, margin.left],
   );
@@ -109,7 +109,7 @@ function BoilerplateChart({
       }),*/
       scaleLog<number>({
         range: [yMax, yMin],
-        domain: [min(stock, getStockValue), max(stock, getStockValue)],
+        domain: [min(btc, getStockValue), max(btc, getStockValue)],
         nice: true,
       }),
     [margin.top, innerHeight],
@@ -125,9 +125,9 @@ function BoilerplateChart({
       let { x } = localPoint(event) || { x: 0 };
       x = x - margin.left;
       const x0 = dateScale.invert(x);
-      const index = bisectDate(stock, x0, 1);
-      const d0 = stock[index - 1];
-      const d1 = stock[index];
+      const index = bisectDate(btc, x0, 1);
+      const d0 = btc[index - 1];
+      const d1 = btc[index];
       let d = d0;
       if (d1 && getDate(d1)) {
         d =
@@ -147,9 +147,9 @@ function BoilerplateChart({
   return (
     <div>
       <svg width={width} height={height}>
-        <rect x={0} y={0} width={width} height={height} fill={background} rx={14} />
+        <rect x={0} y={0} width={width} height={height} fill={background} />
         <Group left={margin.left} top={margin.top}>
-          {showGrid && (
+          {useGrid && (
             <GridRows
               scale={stockScale}
               numTicks={6}
@@ -159,7 +159,7 @@ function BoilerplateChart({
               pointerEvents="none"
             />
           )}
-          {showGrid && (
+          {useGrid && (
             <GridColumns
               scale={dateScale}
               height={innerHeight}
@@ -169,7 +169,7 @@ function BoilerplateChart({
             />
           )}
           <LinePath<AppleStock>
-            data={stock.slice(0, events[0].index + 1)}
+            data={btc.slice(0, events[0].index + 1)}
             x={(d) => dateScale(getDate(d)) || 0}
             y={(d) => stockScale(getStockValue(d)) || 0}
             strokeWidth={1}
@@ -180,7 +180,7 @@ function BoilerplateChart({
             if (index === 0) return;
             return (
               <LinePath<AppleStock>
-                data={stock.slice(events[index - 1].index, event.index + 1)}
+                data={btc.slice(events[index - 1].index, event.index + 1)}
                 x={(d) => dateScale(getDate(d)) || 0}
                 y={(d) => stockScale(getStockValue(d)) || 0}
                 strokeWidth={1}
@@ -190,14 +190,14 @@ function BoilerplateChart({
             );
           })}
           <LinePath<AppleStock>
-            data={stock.slice(-(stock.length - events.slice(-1)[0].index))}
+            data={btc.slice(-(btc.length - events.slice(-1)[0].index))}
             x={(d) => dateScale(getDate(d)) || 0}
             y={(d) => stockScale(getStockValue(d)) || 0}
             strokeWidth={1}
             stroke={events.slice(-1)[0].type === 'buy' ? buyColor : sellColor}
             curve={curveMonotoneX}
           />
-          {!compact && (
+          {!useCompact && (
             <AxisBottom
               top={yMax}
               scale={dateScale}
@@ -207,7 +207,7 @@ function BoilerplateChart({
               tickLabelProps={() => axisBottomTickLabelProps}
             />
           )}
-          {!compact && (
+          {!useCompact && (
             <AxisLeft
               scale={stockScale}
               numTicks={6}
@@ -261,8 +261,9 @@ function BoilerplateChart({
               />
             </g>
           )}
-          {events &&
-            stock.map((item, index) => {
+          {useGlyphs &&
+            events &&
+            btc.map((item, index) => {
               for (const event of events) {
                 if (item.date === event.date) {
                   return (
@@ -310,4 +311,4 @@ function BoilerplateChart({
   );
 }
 
-export default withTooltip<BrushProps, TooltipData>(BoilerplateChart);
+export default withTooltip<BrushProps, TooltipData>(Chart);

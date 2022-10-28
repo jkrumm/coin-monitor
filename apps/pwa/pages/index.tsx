@@ -4,9 +4,8 @@ import { H1 } from '@blueprintjs/core';
 import useAuth from '@cm/pwa/state/useAuth';
 import CardItem, { CardItemTypes } from '@cm/pwa/components/cards/card-item';
 import Script from 'next/script';
-import { ParentSize } from '@visx/responsive';
-import BoilerplateChart from '@cm/pwa/components/charts/boilerplate-chart';
 import { BaseMetric } from '@cm/types';
+import ChartWrapper from '@cm/pwa/components/charts/chart-wrapper';
 
 export function Index({
   btc,
@@ -103,19 +102,7 @@ export function Index({
             </Card>
           </div>
         </div>
-        <div className="mt-8 h-[800px] mb-20">
-          <H1>Chart</H1>
-          <ParentSize>
-            {({ width, height }) => (
-              <BoilerplateChart
-                stock={priceUsd.btc}
-                events={priceUsd.events}
-                width={width}
-                height={height}
-              />
-            )}
-          </ParentSize>
-        </div>
+        <ChartWrapper baseMetric={priceUsd} />
       </div>
       <Script src="/script.js" />
     </div>
