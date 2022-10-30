@@ -28,6 +28,10 @@ export class MetricsEventRepo {
   }
 
   async getByType(type: MetricsEventType) {
-    return this.metricsEventRepo.findBy({ type });
+    return await this.metricsEventRepo
+      .createQueryBuilder('metrics_event')
+      .where('metrics_event.type = :type', { type })
+      .orderBy('time', 'ASC')
+      .getMany();
   }
 }

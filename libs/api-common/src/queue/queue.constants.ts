@@ -49,9 +49,9 @@ export class JobMetadata {
   })
   name: string;
 
-  payloadType: any;
+  payloadType?: any;
 
-  constructor(taskName: string, payloadType: any) {
+  constructor(taskName: string, payloadType?: any) {
     this.name = taskName;
     this.payloadType = payloadType;
   }

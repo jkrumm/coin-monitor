@@ -85,15 +85,25 @@ export class MetricsService {
   }
 
   async fetchPyCycleMetric(): Promise<PyCycleMetric> {
+    const btc = await this.cmRawMetricsRepo.getPriceData();
+    const eventsRaw = await this.metricsEventRepo.getByType(MetricsEventType.PY_CYCLE);
+    const events = [];
+    for (const event of eventsRaw) {
+      const itemIndex = btc.findIndex((item) => item.d === event.date);
+      if (itemIndex === -1) {
+        throw new Error('Date not found');
+      }
+      events.push({
+        d: event.date,
+        c: event.btcClose,
+        i: itemIndex,
+        s: event.signal,
+      });
+    }
+
     return {
-      btc: await this.cmRawMetricsRepo.getPriceData(),
-      events: (await this.metricsEventRepo.getByType(MetricsEventType.PY_CYCLE)).map(
-        (item) => ({
-          d: item.date,
-          c: item.btcClose,
-          s: item.signal,
-        }),
-      ),
+      btc,
+      events,
       pyCycleBottom: {
         long: await this.computedMetricsRepo.getMetric('pyCycleBottomLong'),
         short: await this.computedMetricsRepo.getMetric('pyCycleBottomShort'),

@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
 import { scaleLog, scaleTime } from '@visx/scale';
-import { AppleStock } from '@visx/mock-data/lib/mocks/appleStock';
 import { bisector, extent, max, min } from 'd3-array';
 import { defaultStyles, Tooltip, TooltipWithBounds, withTooltip } from '@visx/tooltip';
 import { localPoint } from '@visx/event';
@@ -26,6 +25,7 @@ import {
 import { curveMonotoneX } from '@visx/curve';
 import { DateTime } from 'luxon';
 import crypto from 'crypto';
+import { MetricsEvent, PriceData } from '@cm/types';
 
 export function toDateTime(date: string | Date): DateTime {
   if (date instanceof Date) {
@@ -35,17 +35,17 @@ export function toDateTime(date: string | Date): DateTime {
 }
 
 // accessors
-const getDate = (d: AppleStock) => new Date(d.date);
-const getStockValue = (d: AppleStock) => d.close;
-const bisectDate = bisector<AppleStock, Date>((d) => new Date(d.date)).left;
+const getDate = (d: PriceData) => new Date(d.d);
+const getStockValue = (d: PriceData) => d.c;
+const bisectDate = bisector<PriceData, Date>((d) => new Date(d.d)).left;
 
-type TooltipData = AppleStock;
+type TooltipData = PriceData;
 export type BrushProps = {
   width: number;
   height: number;
   margin?: { top: number; right: number; bottom: number; left: number };
-  btc: { date: string; close: number }[];
-  events: { date: string; close: number; index: number; type: 'buy' | 'sell' }[];
+  btc: PriceData[];
+  events: MetricsEvent[];
   useGrid?: boolean;
   useGlyphs?: boolean;
   useTooltip?: boolean;
@@ -116,8 +116,8 @@ function Chart({
   );
 
   // positions
-  const getX = (d: AppleStock) => dateScale(new Date(d.date)) ?? 0;
-  const getY = (d: AppleStock) => stockScale(d.close) ?? 0;
+  const getX = (d: PriceData) => dateScale(new Date(d.d)) ?? 0;
+  const getY = (d: PriceData) => stockScale(d.c) ?? 0;
 
   // tooltip handler
   const handleTooltip = useCallback(
@@ -168,8 +168,8 @@ function Chart({
               pointerEvents="none"
             />
           )}
-          <LinePath<AppleStock>
-            data={btc.slice(0, events[0].index + 1)}
+          <LinePath<PriceData>
+            data={btc.slice(0, events[0].i + 1)}
             x={(d) => dateScale(getDate(d)) || 0}
             y={(d) => stockScale(getStockValue(d)) || 0}
             strokeWidth={1}
@@ -179,22 +179,22 @@ function Chart({
           {events.map((event, index) => {
             if (index === 0) return;
             return (
-              <LinePath<AppleStock>
-                data={btc.slice(events[index - 1].index, event.index + 1)}
+              <LinePath<PriceData>
+                data={btc.slice(events[index - 1].i, event.i + 1)}
                 x={(d) => dateScale(getDate(d)) || 0}
                 y={(d) => stockScale(getStockValue(d)) || 0}
                 strokeWidth={1}
-                stroke={event.type === 'buy' ? sellColor : buyColor}
+                stroke={event.s === 'buy' ? sellColor : buyColor}
                 curve={curveMonotoneX}
               />
             );
           })}
-          <LinePath<AppleStock>
-            data={btc.slice(-(btc.length - events.slice(-1)[0].index))}
+          <LinePath<PriceData>
+            data={btc.slice(-(btc.length - events.slice(-1)[0].i))}
             x={(d) => dateScale(getDate(d)) || 0}
             y={(d) => stockScale(getStockValue(d)) || 0}
             strokeWidth={1}
-            stroke={events.slice(-1)[0].type === 'buy' ? buyColor : sellColor}
+            stroke={events.slice(-1)[0].s === 'buy' ? buyColor : sellColor}
             curve={curveMonotoneX}
           />
           {!useCompact && (
@@ -265,14 +265,14 @@ function Chart({
             events &&
             btc.map((item, index) => {
               for (const event of events) {
-                if (item.date === event.date) {
+                if (item.d === event.d) {
                   return (
                     <g key={`line-glyph-${index}`}>
                       <GlyphTriangle
-                        fill={event.type === 'buy' ? buyColor : sellColor}
+                        fill={event.s === 'buy' ? buyColor : sellColor}
                         left={getX(item)}
-                        top={getY(item) + (event.type === 'buy' ? 15 : -15)}
-                        className={event.type === 'sell' ? 'rotate-180' : ''}
+                        top={getY(item) + (event.s === 'buy' ? 15 : -15)}
+                        className={event.s === 'sell' ? 'rotate-180' : ''}
                       />
                     </g>
                   );

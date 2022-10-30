@@ -30,7 +30,14 @@ export const fetchCoinMetricsJobMetadata: JobMetadata = {
   payloadType: FetchCoinMetricsJobPayload,
 };
 
+export const prepareComputedMetricsMetadata: JobMetadata = {
+  name: 'prepare_computed_metrics',
+};
+
+export const startPriceJobsMetadata: JobMetadata = {
+  name: 'start_price_jobs',
+};
+
 export const calculatePiCycleMetadata: JobMetadata = {
   name: 'calculate_pi_cycle',
-  payloadType: undefined,
 };

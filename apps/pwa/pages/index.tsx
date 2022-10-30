@@ -4,17 +4,17 @@ import { H1 } from '@blueprintjs/core';
 import useAuth from '@cm/pwa/state/useAuth';
 import CardItem, { CardItemTypes } from '@cm/pwa/components/cards/card-item';
 import Script from 'next/script';
-import { BaseMetric } from '@cm/types';
+import { BaseMetric, PyCycleMetric } from '@cm/types';
 import ChartWrapper from '@cm/pwa/components/charts/chart-wrapper';
 
 export function Index({
   btc,
   coinMetricsRaw,
-  priceUsd,
+  pyCycleMetric,
 }: {
   btc: any;
   coinMetricsRaw: any;
-  priceUsd: BaseMetric;
+  pyCycleMetric: PyCycleMetric;
 }) {
   const { auth, loading, error } = useAuth();
   return (
@@ -102,7 +102,9 @@ export function Index({
             </Card>
           </div>
         </div>
-        <ChartWrapper baseMetric={priceUsd} />
+        <ChartWrapper
+          baseMetric={{ btc: pyCycleMetric.btc, events: pyCycleMetric.events }}
+        />
       </div>
       <Script src="/script.js" />
     </div>
@@ -120,14 +122,17 @@ export async function getStaticProps() {
   const resCoinMetricsRaw = await fetch('http://localhost:8000/metrics/raw-coinmetrics');
   const coinMetricsRaw = await resCoinMetricsRaw.json();
 
-  const resPriceUsd = await fetch('http://localhost:8000/metrics/price-usd');
-  let priceUsd = (await resPriceUsd.json()) as BaseMetric;
+  /* const resPriceUsd = await fetch('http://localhost:8000/metrics/price-usd');
+  let priceUsd = (await resPriceUsd.json()) as BaseMetric; */
+
+  const resPyCycleMetric = await fetch('http://localhost:8000/metrics/py_cycle');
+  let pyCycleMetric = (await resPyCycleMetric.json()) as BaseMetric;
 
   return {
     props: {
       btc,
       coinMetricsRaw,
-      priceUsd,
+      pyCycleMetric,
     },
   };
 }

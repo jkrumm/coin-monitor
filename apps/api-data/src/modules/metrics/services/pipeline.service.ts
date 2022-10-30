@@ -12,6 +12,7 @@ import { DateTime, Interval } from 'luxon';
 import {
   calculatePiCycleMetadata,
   fetchCoinMetricsJobMetadata,
+  prepareComputedMetricsMetadata,
 } from '@cm/api-data/modules/metrics/constants/pipeline.constants';
 import { queueDataJobGroup } from '@cm/api-data/constants/api-data.constants';
 import { CmRawMetricsRepo } from '@cm/api-data/modules/metrics/repositories/cm-raw-metrics.repo';
@@ -81,7 +82,7 @@ export class PipelineService {
 
     await this.cmRawRepo.save(rawResponse);
 
-    const latestDateComputedMetrics = await this.computedMetricsRepo.getLatestDate();
+    await this.metricsQueueService.add(prepareComputedMetricsMetadata);
   }
 
   async fetchMetricsAvailable(): Promise<boolean> {
@@ -127,6 +128,13 @@ export class PipelineService {
         new ComputedMetrics(date.toISODate(), date.toJSDate()),
       ]);
     }
+
+    const btcCloses = await this.cmRawRepo.getPriceData();
+    for (const btcClose of btcCloses) {
+      await this.computedMetricsRepo.update(btcClose.d, { btcClose: btcClose.c });
+    }
+
+    await this.metricsQueueService.add(prepareComputedMetricsMetadata);
   }
 
   async startPriceJobs() {
