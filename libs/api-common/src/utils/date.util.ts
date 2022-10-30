@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon';
+import { DateTime, Interval } from 'luxon';
 
 /**
  * Wrapper function to reduce verbosity
@@ -27,4 +27,17 @@ export function toIsoDateString(date: string | Date | null): string | null {
   }
 
   return toDateTime(date).toISODate();
+}
+
+export function todayDateTime(): DateTime {
+  return DateTime.now().startOf('day');
+}
+
+// Loop over days
+export function* days(interval: Interval) {
+  let cursor = interval.start.startOf('day');
+  while (cursor < interval.end) {
+    yield cursor;
+    cursor = cursor.plus({ days: 1 });
+  }
 }

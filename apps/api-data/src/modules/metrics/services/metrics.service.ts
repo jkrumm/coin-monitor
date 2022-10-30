@@ -1,27 +1,31 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { BaseMetric, PyCycleMetric } from '@cm/types';
+import { CmRawMetricsRepo } from '@cm/api-data/modules/metrics/repositories/cm-raw-metrics.repo';
+import { ComputedMetricsRepo } from '../repositories/computed-metrics.repo';
+import { MetricsEventRepo } from '@cm/api-data/modules/metrics/repositories/metrics-event.repo';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CoinMetricsRaw } from '../entities/coin-metrics-raw.entity';
 import { Repository } from 'typeorm';
-import { BaseMetric } from '@cm/types';
+import { CmRawMetrics } from '@cm/api-data/modules/metrics/entities/cm-raw-metrics.entity';
+import { MetricsEventType } from '@cm/api-data/modules/metrics/entities/metrics-event.entity';
 
 @Injectable()
 export class MetricsService {
   private readonly logger = new Logger(MetricsService.name);
 
   constructor(
-    @InjectRepository(CoinMetricsRaw)
-    private readonly coinMetricsRawRepo: Repository<CoinMetricsRaw>,
+    @InjectRepository(CmRawMetrics)
+    private readonly coinMetricsRawRepo: Repository<CmRawMetrics>,
+    private readonly cmRawMetricsRepo: CmRawMetricsRepo,
+    private readonly computedMetricsRepo: ComputedMetricsRepo,
+    private readonly metricsEventRepo: MetricsEventRepo,
   ) {}
 
   async doFirstJob(msg: string) {
     this.logger.log('doFirstJob ' + msg);
   }
 
-  async fetchRawCoinsMetrics() {
-    return await this.coinMetricsRawRepo
-      .createQueryBuilder('coin_metrics_raw')
-      .orderBy('time', 'DESC')
-      .getOne();
+  async fetchLatestCmRaw() {
+    return await this.cmRawMetricsRepo.getLatest();
   }
 
   async fetchPriceUsd(): Promise<BaseMetric> {
@@ -58,13 +62,13 @@ export class MetricsService {
     ];
 
     const btc = cmRaw.map((item) => ({
-      date: item.date,
-      close: Math.round(parseFloat(item.PriceUSD) * 100) / 100,
+      d: item.date,
+      c: item.PriceUSD,
     }));
 
     const events = [];
     for (const event of eventsRaw) {
-      const itemIndex = btc.findIndex((item) => item.date === event.date);
+      const itemIndex = btc.findIndex((item) => item.d === event.date);
       if (itemIndex === -1) {
         throw new Error('Date not found');
       }
@@ -78,5 +82,26 @@ export class MetricsService {
     }
 
     return { btc, events };
+  }
+
+  async fetchPyCycleMetric(): Promise<PyCycleMetric> {
+    return {
+      btc: await this.cmRawMetricsRepo.getPriceData(),
+      events: (await this.metricsEventRepo.getByType(MetricsEventType.PY_CYCLE)).map(
+        (item) => ({
+          d: item.date,
+          c: item.btcClose,
+          s: item.signal,
+        }),
+      ),
+      pyCycleBottom: {
+        long: await this.computedMetricsRepo.getMetric('pyCycleBottomLong'),
+        short: await this.computedMetricsRepo.getMetric('pyCycleBottomShort'),
+      },
+      pyCycleTop: {
+        long: await this.computedMetricsRepo.getMetric('pyCycleTopLong'),
+        short: await this.computedMetricsRepo.getMetric('pyCycleTopShort'),
+      },
+    };
   }
 }

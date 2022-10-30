@@ -10,7 +10,7 @@ export const requiredMetrics = [
   'IssTotUSD',
 ];
 
-export class CoinMetricsRawResponse {
+export class CmRawMetricsResponse {
   @IsString()
   @IsNotEmpty()
   @Expose()

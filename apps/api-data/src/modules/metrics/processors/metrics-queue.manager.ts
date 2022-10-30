@@ -20,7 +20,7 @@ export class MetricsQueueService {
 
   async add<T>(
     metadata: JobMetadata,
-    payload: object,
+    payload?: object,
     options?: JobOptions,
   ): Promise<Job<T>> {
     const job = new QueueJob(metadata, payload);

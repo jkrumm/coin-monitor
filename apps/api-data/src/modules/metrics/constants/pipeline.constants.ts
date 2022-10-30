@@ -29,3 +29,8 @@ export const fetchCoinMetricsJobMetadata: JobMetadata = {
   name: 'fetch_coin_metrics',
   payloadType: FetchCoinMetricsJobPayload,
 };
+
+export const calculatePiCycleMetadata: JobMetadata = {
+  name: 'calculate_pi_cycle',
+  payloadType: undefined,
+};

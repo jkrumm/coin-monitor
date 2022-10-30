@@ -16,3 +16,4 @@ export * from 'libs/api-common/src/utils/get-env.util';
 export * from 'libs/api-common/src/utils/booly.util';
 export * from './utils/date.util';
 export * from './utils/got.util';
+export * from './utils/math.util';

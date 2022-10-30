@@ -7,10 +7,9 @@ import {
 } from 'typeorm';
 import { IdentifiableDate, TimeTracked } from '@cm/api-common';
 
-@Entity('coin_metrics_raw')
-export class CoinMetricsRaw implements IdentifiableDate, TimeTracked {
+@Entity('cm_raw_metrics')
+export class CmRawMetrics implements IdentifiableDate, TimeTracked {
   // IdentifiableDate
-  // @Column({ type: 'date' })
   @PrimaryColumn({ type: 'date' })
   date: string;
 
@@ -23,8 +22,8 @@ export class CoinMetricsRaw implements IdentifiableDate, TimeTracked {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column({ type: 'varchar', nullable: true })
-  PriceUSD: string | null;
+  @Column({ nullable: true })
+  PriceUSD: number | null;
 
   @Column({ type: 'varchar', nullable: true })
   CapRealUSD: string | null;

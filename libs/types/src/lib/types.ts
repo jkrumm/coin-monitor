@@ -33,12 +33,31 @@ export interface TokenPayload {
 }
 
 // METRICS
-export interface PriceUsd {
-  date: string;
-  value: string;
+export interface PriceData {
+  d: string;
+  c: number;
+}
+
+export enum MetricsEventSignal {
+  BUY = 'buy',
+  SELL = 'sell',
+}
+
+export interface MetricsEvent extends PriceData {
+  s: 'buy' | 'sell';
+}
+
+export interface TwoMa {
+  long: number[];
+  short: number[];
 }
 
 export interface BaseMetric {
-  btc: { date: string; close: number }[];
-  events: { date: string; close: number; index: number; type: 'buy' | 'sell' }[];
+  btc: PriceData[];
+  events: MetricsEvent[];
+}
+
+export interface PyCycleMetric extends BaseMetric {
+  pyCycleBottom: TwoMa;
+  pyCycleTop: TwoMa;
 }
