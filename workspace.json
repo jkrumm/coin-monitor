@@ -54,7 +54,7 @@
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/pwa"],
+          "outputs": ["{workspaceRoot}/coverage/apps/pwa"],
           "options": {
             "jestConfig": "apps/pwa/jest.config.ts",
             "passWithNoTests": true

@@ -12,7 +12,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/api-common"],
+      "outputs": ["{workspaceRoot}/coverage/libs/api-common"],
       "options": {
         "jestConfig": "libs/api-common/jest.config.ts",
         "passWithNoTests": true
