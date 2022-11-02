@@ -85,34 +85,30 @@ export default function Header() {
                   <div className="flex flex-shrink-0 items-center">
                     <div className="block flex lg:hidden">
                       <Link href="/">
-                        <a>
-                          <img
-                            className="inline-block relative bottom-[5px]"
-                            width="51.45"
-                            height="32"
-                            src="logo-white.svg"
-                            alt="CoinMonitor"
-                          />
-                          <H1 className="text-white inline-block mb-0 ml-2 relative top-[2px]">
-                            CoinMonitor
-                          </H1>
-                        </a>
+                        <img
+                          className="inline-block relative bottom-[5px]"
+                          width="51.45"
+                          height="32"
+                          src="logo-white.svg"
+                          alt="CoinMonitor"
+                        />
+                        <H1 className="text-white inline-block mb-0 ml-2 relative top-[2px]">
+                          CoinMonitor
+                        </H1>
                       </Link>
                     </div>
                     <div className="hidden lg:block">
                       <Link href="/">
-                        <a>
-                          <img
-                            className="inline-block relative bottom-[5px]"
-                            width="51.45"
-                            height="32"
-                            src="logo-white.svg"
-                            alt="CoinMonitor"
-                          />
-                          <H1 className="text-white inline-block mb-0 ml-2 relative top-[2px]">
-                            CoinMonitor
-                          </H1>
-                        </a>
+                        <img
+                          className="inline-block relative bottom-[5px]"
+                          width="51.45"
+                          height="32"
+                          src="logo-white.svg"
+                          alt="CoinMonitor"
+                        />
+                        <H1 className="text-white inline-block mb-0 ml-2 relative top-[2px]">
+                          CoinMonitor
+                        </H1>
                       </Link>
                     </div>
                   </div>
