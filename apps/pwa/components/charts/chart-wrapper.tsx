@@ -4,12 +4,30 @@ import { ParentSize } from '@visx/responsive';
 import Chart from '@cm/pwa/components/charts/chart';
 import { BaseMetric } from '@cm/types';
 
-export default function ChartWrapper({ baseMetric }: { baseMetric: BaseMetric }) {
+export default function ChartWrapper({
+  baseMetric,
+  lines,
+}: {
+  baseMetric: BaseMetric;
+  lines: { values: number[]; id: string; color: string }[];
+}) {
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [useCompact, setUseCompact] = useState<boolean>(false);
   const [useGlyphs, setUseGlyphs] = useState<boolean>(true);
   const [useTooltip, setUseTooltip] = useState<boolean>(true);
   const [useGrid, setUseGrid] = useState<boolean>(true);
+
+  const mappedLines = lines.map((line) => {
+    const reversedLine = line.values.slice().reverse();
+    return {
+      mappedValues: reversedLine.map((value, index) => ({
+        c: value,
+        d: baseMetric.btc.at(-(index + 1)).d,
+      })),
+      id: line.id,
+      color: line.color,
+    };
+  });
 
   return (
     <div
@@ -94,6 +112,7 @@ export default function ChartWrapper({ baseMetric }: { baseMetric: BaseMetric })
               useGlyphs={useGlyphs}
               useTooltip={useTooltip}
               useGrid={useGrid}
+              lines={mappedLines}
             />
           )}
         </ParentSize>

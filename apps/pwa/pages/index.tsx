@@ -104,6 +104,28 @@ export function Index({
         </div>
         <ChartWrapper
           baseMetric={{ btc: pyCycleMetric.btc, events: pyCycleMetric.events }}
+          lines={[
+            {
+              values: pyCycleMetric.pyCycleTop.long,
+              id: 'pyCycleTop',
+              color: '#fbb360',
+            },
+            {
+              values: pyCycleMetric.pyCycleTop.short,
+              id: 'pyCycleTop',
+              color: '#fbb360',
+            },
+            {
+              values: pyCycleMetric.pyCycleBottom.long,
+              id: 'pyCycleBottom',
+              color: '#8abbff',
+            },
+            {
+              values: pyCycleMetric.pyCycleBottom.short,
+              id: 'pyCycleBottom',
+              color: '#8abbff',
+            },
+          ]}
         />
       </div>
       <Script src="/script.js" />

@@ -46,6 +46,7 @@ export type BrushProps = {
   margin?: { top: number; right: number; bottom: number; left: number };
   btc: PriceData[];
   events: MetricsEvent[];
+  lines?: { id: string; color: string; mappedValues: { d: string; c: number }[] }[];
   useGrid?: boolean;
   useGlyphs?: boolean;
   useTooltip?: boolean;
@@ -59,6 +60,7 @@ function Chart({
   height,
   btc,
   events,
+  lines,
   useGrid = true,
   useTooltip = true,
   margin = {
@@ -149,6 +151,19 @@ function Chart({
       <svg width={width} height={height}>
         <rect x={0} y={0} width={width} height={height} fill={background} />
         <Group left={margin.left} top={margin.top}>
+          {lines &&
+            lines.map((line, index) => (
+              <LinePath<PriceData>
+                key={'line_' + index}
+                data={line.mappedValues}
+                x={(d) => dateScale(getDate(d)) || 0}
+                y={(d) => stockScale(getStockValue(d)) || 0}
+                strokeWidth={1}
+                opacity={0.5}
+                stroke={line.color}
+                curve={curveMonotoneX}
+              />
+            ))}
           {useGrid && (
             <GridRows
               scale={stockScale}

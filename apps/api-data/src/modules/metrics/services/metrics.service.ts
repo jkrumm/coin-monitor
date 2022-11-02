@@ -84,9 +84,10 @@ export class MetricsService {
     return { btc, events };
   }
 
-  async fetchPyCycleMetric(): Promise<PyCycleMetric> {
+  async getBaseMetrics(metricsEventType: MetricsEventType): Promise<BaseMetric> {
     const btc = await this.cmRawMetricsRepo.getPriceData();
-    const eventsRaw = await this.metricsEventRepo.getByType(MetricsEventType.PY_CYCLE);
+
+    const eventsRaw = await this.metricsEventRepo.getByType(metricsEventType);
     const events = [];
     for (const event of eventsRaw) {
       const itemIndex = btc.findIndex((item) => item.d === event.date);
@@ -100,10 +101,19 @@ export class MetricsService {
         s: event.signal,
       });
     }
-
     return {
       btc,
       events,
+    };
+  }
+
+  async fetchPyCycleMetric(): Promise<PyCycleMetric> {
+    const baseMetric = await this.getBaseMetrics(MetricsEventType.PY_CYCLE);
+    // Gives two sell signals in 2013 which are confusing
+    baseMetric.events.shift();
+
+    return {
+      ...baseMetric,
       pyCycleBottom: {
         long: await this.computedMetricsRepo.getMetric('pyCycleBottomLong'),
         short: await this.computedMetricsRepo.getMetric('pyCycleBottomShort'),
