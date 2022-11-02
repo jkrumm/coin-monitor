@@ -51,6 +51,7 @@ export type BrushProps = {
   useGlyphs?: boolean;
   useTooltip?: boolean;
   useCompact?: boolean;
+  useShort?: boolean;
 };
 
 function Chart({
@@ -63,6 +64,7 @@ function Chart({
   lines,
   useGrid = true,
   useTooltip = true,
+  useShort = false,
   margin = {
     top: 20,
     left: 60,
@@ -104,11 +106,6 @@ function Chart({
 
   const stockScale = useMemo(
     () =>
-      /*scaleLinear({
-        range: [innerHeight + margin.top, margin.top],
-        domain: [0, (max(stock, getStockValue) || 0) + innerHeight / 3],
-        nice: true,
-      }),*/
       scaleLog<number>({
         range: [yMax, yMin],
         domain: [min(btc, getStockValue), max(btc, getStockValue)],
@@ -167,7 +164,7 @@ function Chart({
           {useGrid && (
             <GridRows
               scale={stockScale}
-              numTicks={6}
+              numTicks={useShort ? 3 : 6}
               width={innerWidth}
               stroke={accentColor}
               strokeOpacity={0.05}
@@ -195,6 +192,7 @@ function Chart({
             if (index === 0) return;
             return (
               <LinePath<PriceData>
+                key={'btc_' + index}
                 data={btc.slice(events[index - 1].i, event.i + 1)}
                 x={(d) => dateScale(getDate(d)) || 0}
                 y={(d) => stockScale(getStockValue(d)) || 0}
@@ -225,7 +223,7 @@ function Chart({
           {!useCompact && (
             <AxisLeft
               scale={stockScale}
-              numTicks={6}
+              numTicks={useShort ? 3 : 6}
               stroke={axisColor}
               tickStroke={axisColor}
               tickLabelProps={() => axisLeftTickLabelProps}

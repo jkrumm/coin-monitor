@@ -88,19 +88,11 @@ export class MetricsService {
     const btc = await this.cmRawMetricsRepo.getPriceData();
 
     const eventsRaw = await this.metricsEventRepo.getByType(metricsEventType);
-    const events = [];
-    for (const event of eventsRaw) {
-      const itemIndex = btc.findIndex((item) => item.d === event.date);
-      if (itemIndex === -1) {
-        throw new Error('Date not found');
-      }
-      events.push({
-        d: event.date,
-        c: event.btcClose,
-        i: itemIndex,
-        s: event.signal,
-      });
-    }
+    const events = eventsRaw.map((event) => ({
+      d: event.date,
+      c: event.btcClose,
+      s: event.signal,
+    }));
     return {
       btc,
       events,

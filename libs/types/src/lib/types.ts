@@ -44,7 +44,7 @@ export enum MetricsEventSignal {
 }
 
 export interface MetricsEvent extends PriceData {
-  i: number;
+  i?: number;
   s: 'buy' | 'sell';
 }
 
